@@ -3,8 +3,9 @@
     <section class="sidebar-layout">
       <b-sidebar
         :fullheight="true"
-        style="text-align: center; font-weight: 300"
+        style="text-align: center; font-weight: 400"
         :can-cancel="false"
+        position="static"
         open
       >
         <div class="p-1">
@@ -138,7 +139,7 @@
           :sort-icon-size="null"
         >
           <b-table-column
-            field="id"
+            field="employeeId"
             label="工号"
             :numeric="true"
             :searchable="true"
@@ -246,7 +247,8 @@
         </b-table>
       </div>
 
-      <b-loading :active.sync="isLoading" :can-cancel="false"></b-loading>
+      <b-loading :active.sync="isLoading" :can-cancel="false"
+        position="static"></b-loading>
     </section>
   </div>
 </template>

@@ -3,8 +3,9 @@
     <section class="sidebar-layout">
       <b-sidebar
         :fullheight="true"
-        style="text-align: center; font-weight: 300"
+        style="text-align: center; font-weight: 400"
         :can-cancel="false"
+        position="static"
         open
       >
         <div class="p-1">
@@ -16,7 +17,7 @@
               ><router-link to="/teacher/exams"
                 ><b-menu-item
                   icon="google-classroom"
-                  label="查看考试"
+                  label="所有考试"
                 ></b-menu-item></router-link
               ><router-link to="/teacher/papers"
                 ><b-menu-item
@@ -54,7 +55,7 @@
         </div>
       </b-sidebar>
 
-      <div style="padding-left: 280px"></div>
+      
 
       <nav class="level" style="margin: 50px; width: 100%">
         <div class="level-item has-text-centered">
@@ -71,7 +72,8 @@
         </div>
       </nav>
 
-      <b-loading :active.sync="isLoading" :can-cancel="false"></b-loading>
+      <b-loading :active.sync="isLoading" :can-cancel="false"
+        position="static"></b-loading>
     </section>
   </div>
 </template>

@@ -3,8 +3,9 @@
     <section class="sidebar-layout">
       <b-sidebar
         :fullheight="true"
-        style="text-align: center; font-weight: 300"
+        style="text-align: center; font-weight: 400"
         :can-cancel="false"
+        position="static"
         open
       >
         <div class="p-1">
@@ -16,7 +17,7 @@
               ><router-link to="/teacher/exams"
                 ><b-menu-item
                   icon="google-classroom"
-                  label="查看考试"
+                  label="所有考试"
                 ></b-menu-item></router-link
               ><router-link to="/teacher/papers"
                 ><b-menu-item
@@ -51,9 +52,15 @@
         </div>
       </b-sidebar>
 
-      <div style="padding-left: 280px"></div>
-
-      <div style="margin: 30px; width: 100%" v-if="mode === 'list'">
+      <div
+        style="
+          margin-left: 30px;
+          margin-right: 30px;
+          margin-top: 10px;
+          width: 100%;
+        "
+        v-if="mode === 'list'"
+      >
         <div style="display: flex; justify-content: space-between">
           <div>
             共计
@@ -80,20 +87,29 @@
         >
           <b-table-column
             label="标题"
+            field="title"
             sortable
             :searchable="true"
             v-slot="props"
           >
             {{ props.row.title }}
           </b-table-column>
-          <b-table-column label="状态" field="status" sortable v-slot="props">
+          <b-table-column
+            label="状态"
+            :centered="true"
+            field="isPublished"
+            width="3em"
+            sortable
+            v-slot="props"
+          >
             <span :style="{ color: statusColor(props.row.isPublished) }">
               {{ statusText(props.row.isPublished) }}
             </span>
           </b-table-column>
           <b-table-column v-slot="props">
             <b-button
-              class="button is-danger is-light"
+              class="button is-danger"
+              outlined
               icon-left="trash-can-outline"
               style="height: 25.8px"
               v-if="props.row.isPublished !== true"
@@ -102,53 +118,66 @@
               删除
             </b-button>
             <b-button
-              class="button is-info is-light"
+              class="button is-info"
+              outlined
               icon-left="pencil"
               style="margin-left: 10px; height: 25.8px"
               v-if="props.row.isPublished === false"
+              @click="editExam(props.row)"
             >
               编辑
             </b-button>
             <b-button
-              class="button is-info is-light"
+              class="button is-info"
+              outlined
               icon-left="magnify"
               style="margin-left: 10px; height: 25.8px"
               v-if="props.row.isPublished === true"
             >
-              查看
             </b-button>
             <b-button
-              class="button is-primary is-light"
+              class="button is-primary"
+              outlined
+              icon-left="list-status"
+              style="margin-left: 10px; height: 25.8px"
+              v-if="props.row.isPublished === true"
+            >
+              成绩
+            </b-button>
+            <b-button
+              class="button is-info"
               icon-left="account-group"
               style="margin-left: 10px; height: 25.8px"
               v-if="props.row.isPublished === true"
+              @lick="setExamStudent(props.row.examId)"
             >
-              设置考生
+              考生
             </b-button>
             <b-button
-              class="button is-success is-light"
+              class="button is-success"
               icon-left="arrow-expand-up"
               style="margin-left: 10px; height: 25.8px"
               v-if="props.row.isPublished === false"
+              @click="togglePublish(props.row, true)"
             >
-              公开
+              发布
             </b-button>
             <b-button
-              class="button is-warning is-light"
+              class="button is-warning"
               icon-left="arrow-expand-down"
               style="margin-left: 10px; height: 25.8px"
               v-if="props.row.isPublished === true"
+              @click="togglePublish(props.row, false)"
             >
-              撤回
+              撤下
             </b-button>
           </b-table-column>
 
-          <b-table-column v-slot="props">
+          <b-table-column label="复制试题" :centered="true" v-slot="props">
             <b-button
-              class="button is-link"
               icon-left="content-copy"
               style="margin-left: 10px; height: 25.8px"
-              @click="console.log(props)"
+              @click="copyExam(props.row)"
             >
             </b-button>
           </b-table-column>
@@ -167,10 +196,10 @@
           </a>
         </div>
         <div class="content" style="margin-left: 20px; margin-right: 20px">
-          <b-input placeholder="标题" v-model="newExam.title"> </b-input>
+          <b-input placeholder="标题" v-model="examToAdd.title"> </b-input>
           <b-input
             placeholder="序言"
-            v-model="newExam.introduction"
+            v-model="examToAdd.introduction"
             style="margin-top: 10px"
           >
           </b-input>
@@ -178,7 +207,7 @@
             <b-datetimepicker
               horizontal-time-picker
               placeholder="考试开始时间"
-              v-model="newExam.startTime"
+              v-model="examToAdd.startTime"
               :editable="true"
             ></b-datetimepicker>
             <b-icon icon="tilde" style="padding: 20px"></b-icon>
@@ -186,7 +215,7 @@
               horizontal-time-picker
               placeholder="考试结束时间"
               :editable="true"
-              v-model="newExam.endTime"
+              v-model="examToAdd.endTime"
             ></b-datetimepicker>
           </div>
           <div style="display: flex; padding: 5px">
@@ -198,7 +227,7 @@
           </div>
           <section>
             <b-table :data="questionsInExamToAdd">
-              <b-table-column field="name" label="题号" v-slot="{ index }">
+              <b-table-column label="题号" v-slot="{ index }">
                 {{ index + 1 }}
               </b-table-column>
 
@@ -216,7 +245,7 @@
                 <b-numberinput
                   v-model="props.row.score"
                   controls-position="compact"
-                  size="is-small"
+                  min="0"
                 ></b-numberinput>
               </b-table-column>
 
@@ -225,14 +254,13 @@
                   rounded
                   type="is-danger is-light"
                   icon-left="close"
-                  style="height: 25.8px; margin-right: 20px"
+                  style="margin-right: 20px"
                   @click="questionsInExamToAdd.splice(index, 1)"
                 ></b-button>
                 <span
                   ><b-button
                     rounded
                     icon-left="chevron-double-up"
-                    style="height: 25.8px"
                     v-if="index !== 0"
                     @click="
                       var questionToMoveTop = questionsInExamToAdd[index];
@@ -245,7 +273,6 @@
                     rounded
                     disabled
                     icon-left="chevron-double-up"
-                    style="height: 25.8px"
                     v-else
                   >
                   </b-button
@@ -254,7 +281,6 @@
                   ><b-button
                     rounded
                     icon-left="chevron-up"
-                    style="height: 25.8px"
                     v-if="index !== 0"
                     @click="swapQuestion(index, index - 1)"
                   >
@@ -263,7 +289,6 @@
                     disabled
                     rounded
                     icon-left="chevron-up"
-                    style="height: 25.8px"
                     v-else
                   ></b-button
                 ></span>
@@ -272,7 +297,6 @@
                   ><b-button
                     rounded
                     icon-left="chevron-down"
-                    style="height: 25.8px"
                     v-if="index !== questionsInExamToAdd.length - 1"
                     @click="swapQuestion(index, index + 1)"
                   >
@@ -281,7 +305,6 @@
                     disabled
                     rounded
                     icon-left="chevron-down"
-                    style="height: 25.8px"
                     v-else
                   ></b-button
                 ></span>
@@ -296,12 +319,12 @@
               rounded
               @click="
                 addModalActive = true;
-                loadAsyncData();
+                loadQuestions();
               "
             ></b-button>
           </section>
-          <b-modal v-model="addModalActive" has-modal-card trap-focus>
-            <div class="modal-card" style="width: auto; text-align: left">
+          <b-modal v-model="addModalActive" has-modal-card>
+            <div class="modal-card" style="width: auto">
               <section class="modal-card-body">
                 <b-table
                   :data="questions"
@@ -311,6 +334,19 @@
                 >
                   <b-table-column
                     :searchable="true"
+                    :numeric="true"
+                    field="questionId"
+                    label="题目 ID"
+                    width="80"
+                    sortable
+                    v-slot="props"
+                  >
+                    <span class="questionId">
+                      {{ props.row.questionId }}
+                    </span>
+                  </b-table-column>
+                  <b-table-column
+                    field="questionType"
                     label="题型"
                     sortable
                     v-slot="props"
@@ -322,6 +358,7 @@
 
                   <b-table-column
                     :searchable="true"
+                    field="content"
                     label="预览"
                     width="500"
                     v-slot="props"
@@ -336,10 +373,6 @@
                       rounded
                       @click="
                         questionsInExamToAdd.push(props.row);
-                        // questionsInExamToAdd[
-                        //   questionsInExamToAdd.length - 1
-                        // ].score = 0;
-                        // // questionsInExamToAdd = questionsInExamToAdd.slice();
                         addModalActive = false;
                       "
                       style="margin-right: 10px; height: 25.8px"
@@ -355,8 +388,9 @@
           </b-modal>
         </div>
         <b-button
-          type="is-primary"
-          icon-left="content-save"
+          type="is-success"
+          outlined
+          icon-left="check-bold"
           style="margin-bottom: 30px"
           @click="addSave"
         >
@@ -364,7 +398,11 @@
         </b-button>
       </div>
 
-      <b-loading :active.sync="isLoading" :can-cancel="false"></b-loading>
+      <b-loading
+        :active.sync="isLoading"
+        :can-cancel="false"
+        position="static"
+      ></b-loading>
     </section>
   </div>
 </template>
@@ -383,17 +421,18 @@ export default {
       data: [],
       questions: [],
       questionsInExamToAdd: [],
+      questionsInExamToEdit: [],
       isLoading: false,
 
       questionTypes: [0, 1, 2],
 
-      newExam: {
+      examToAdd: {
         creator: this.uid,
-        isPublished: false,
         title: "",
         startTime: null,
         endTime: null,
         introduction: "",
+        isPublished: false,
       },
 
       addModalActive: false,
@@ -406,7 +445,7 @@ export default {
   },
 
   methods: {
-    loadAsyncData() {
+    loadQuestions() {
       this.isLoading = true;
       axios
         .get("/api/questions")
@@ -423,6 +462,9 @@ export default {
           });
           return;
         });
+    },
+    setExamStudent(examId) {
+      console.log(examId);
     },
     logConsole() {
       for (let i of this.questionsInExamToAdd) {
@@ -448,18 +490,21 @@ export default {
       });
     },
     addSave() {
-      var examToAdd = {
-        creator: this.uid,
-        title: this.newExam.title,
-        startTime: this.newExam.startTime,
-        endTime: this.newExam.endTime,
-        introduction: this.newExam.introduction,
-        isPublished: false,
-      };
-      console.log(examToAdd);
+      if (
+        this.examToAdd.startTime &&
+        this.examToAdd.endTime &&
+        this.examToAdd.startTime > this.examToAdd.endTime
+      ) {
+        this.$buefy.dialog.alert({
+          message: "错误：结束时间早于开始时间",
+          type: "is-danger",
+        });
+        return;
+      }
+      if (this.examToAdd.title === "") this.examToAdd = "无标题";
       this.isLoading = true;
       axios
-        .post("/api/exams", examToAdd) // returns examId
+        .post("/api/exams", this.examToAdd) // returns examId
         .then(async (result) => {
           let examId = result.data.data;
           for (var i = 0; i < this.questionsInExamToAdd.length; i++) {
@@ -470,12 +515,14 @@ export default {
               score: this.questionsInExamToAdd[i].score,
             });
           }
+          this.isLoading = false;
+          this.examToAdd.examId = examId;
+          this.data.push(this.examToAdd);
           this.mode = "list";
           this.$buefy.notification.open({
             message: "试卷已保存",
             type: "is-success",
           });
-          location.reload();
         })
         .catch((error) => {
           this.isLoading = false;
@@ -485,6 +532,46 @@ export default {
             pauseOnHover: true,
           });
           return;
+        });
+    },
+    editExam(row) {
+      alert("该功能尚未开发" + row);
+    },
+    togglePublish(row, changeTo) {
+      if (
+        changeTo === true &&
+        (row.startTime === null || row.endTime === null)
+      ) {
+        this.$buefy.dialog.alert({
+          message: "设置了起止时间才能发布考试！",
+          type: "is-danger",
+        });
+        return;
+      }
+      this.isLoading = true;
+      axios
+        .put("/api/exams", { examId: row.examId, isPublished: changeTo })
+        .then(() => {
+          this.isLoading = false;
+          row.isPublished = changeTo;
+          this.$buefy.dialog.alert(
+            changeTo
+              ? {
+                  title: "试卷已公开",
+                  message: "您可以在「所有考试」中查看所有公开的试卷",
+                  type: "is-success",
+                }
+              : {
+                  message: "已设置为非公开，作答信息保留",
+                }
+          );
+        })
+        .catch((error) => {
+          this.isLoading = false;
+          this.$buefy.notification.open({
+            message: "服务器异常：" + error,
+            type: "is-danger",
+          });
         });
     },
     deleteExam(row) {
@@ -503,6 +590,7 @@ export default {
               this.$buefy.notification.open({
                 message: "试卷已删除！",
                 type: "is-link",
+                position: "is-bottom-right",
               });
               this.data.splice(this.data.indexOf(row), 1);
             })
@@ -515,6 +603,50 @@ export default {
             });
         },
       });
+    },
+    copyExam(row) {
+      let examToCopy = {
+        creator: row.creator,
+        isPublished: false,
+        title: row.title,
+        startTime: row.startTime,
+        endTime: row.endTime,
+        introduction: row.introduction,
+      };
+      this.isLoading = true;
+      axios
+        .get("/api/exam-questions", { params: { examId: row.examId } })
+        .then((response) => {
+          let examQuestionsToCopy = response.data.data;
+          axios.post("/api/exams", examToCopy).then(async (result) => {
+            let examId = result.data.data;
+            for (let i of examQuestionsToCopy) {
+              await axios.post("/api/exam-questions", {
+                examId: examId,
+                questionIndex: i.questionIndex,
+                questionId: i.questionId,
+                score: i.score,
+              });
+            }
+            this.isLoading = false;
+            examToCopy.examId = examId;
+            this.data.push(examToCopy);
+            this.mode = "list";
+            this.$buefy.notification.open({
+              message: "试卷已复制",
+              type: "is-success",
+            });
+          });
+        })
+        .catch((error) => {
+          this.isLoading = false;
+          this.$buefy.notification.open({
+            message: "服务器异常：" + error,
+            type: "is-danger",
+            pauseOnHover: true,
+          });
+          return;
+        });
     },
     statusText(status) {
       switch (status) {
@@ -571,6 +703,7 @@ export default {
         axios
           .get("/api/exams", { params: { creator: this.uid } })
           .then((result) => {
+            this.isLoading = false;
             this.data = result.data.data;
           });
       })

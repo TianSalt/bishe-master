@@ -3,8 +3,9 @@
     <section class="sidebar-layout">
       <b-sidebar
         :fullheight="true"
-        style="text-align: center; font-weight: 300"
+        style="text-align: center; font-weight: 400"
         :can-cancel="false"
+        position="static"
         open
       >
         <div class="p-1">
@@ -17,7 +18,7 @@
                 ><b-menu-item
                   active
                   icon="google-classroom"
-                  label="查看考试"
+                  label="所有考试"
                 ></b-menu-item></router-link
               ><router-link to="/teacher/papers"
                 ><b-menu-item
@@ -51,24 +52,7 @@
         </div>
       </b-sidebar>
 
-      <div style="padding-left: 280px"></div>
-
-      <div style="margin: 50px">
-        <div style="display: flex; justify-content: space-between">
-          <div></div>
-          <div>
-            共计
-            <span style="color: #755dd3; font-weight: 800">{{
-              data.length
-            }}</span>
-            场考试
-          </div>
-          <!-- <div>
-            请在
-            <span style="color: #755dd3; font-weight: 800">试卷管理</span>
-            中添加、删除、变更考试
-          </div> -->
-        </div>
+      <div style="margin: 50px; width: 100%">
         <b-table
           class="table is-striped"
           :data="data"
@@ -78,21 +62,50 @@
           :sort-icon-size="null"
           :striped="true"
         >
-          <b-table-column label="标题" sortable v-slot="props">
+          <b-table-column
+            label="标题"
+            field="title"
+            :centered="true"
+            sortable
+            v-slot="props"
+          >
             {{ props.row.title }}
           </b-table-column>
-          <b-table-column label="创建者" field="name" sortable v-slot="props">
-            {{ props.row.creator }}
+          <b-table-column
+            label="创建者"
+            field="creatorName"
+            :centered="true"
+            sortable
+            v-slot="props"
+          >
+            {{ props.row.creatorName }}
           </b-table-column>
-          <b-table-column label="开始时间" field="time" sortable v-slot="props">
+          <b-table-column
+            label="开始时间"
+            field="startTime"
+            :centered="true"
+            sortable
+            v-slot="props"
+          >
             {{ props.row.startTime }}
           </b-table-column>
 
-          <b-table-column label="结束时间" field="time" sortable v-slot="props">
+          <b-table-column
+            label="结束时间"
+            field="endTime"
+            :centered="true"
+            sortable
+            v-slot="props"
+          >
             {{ props.row.endTime }}
           </b-table-column>
 
-          <b-table-column label="状态" field="status" v-slot="props">
+          <b-table-column
+            label="状态"
+            :centered="true"
+            field="status"
+            v-slot="props"
+          >
             <span :style="{ color: statusColor(props.row.status) }">
               {{ statusText(props.row.status) }}
             </span>
@@ -104,7 +117,11 @@
         </b-table>
       </div>
 
-      <b-loading :active.sync="isLoading" :can-cancel="false"></b-loading>
+      <b-loading
+        :active.sync="isLoading"
+        :can-cancel="false"
+        position="static"
+      ></b-loading>
     </section>
   </div>
 </template>
@@ -116,7 +133,6 @@ export default {
   data() {
     return {
       uid: null,
-      currentTime: Date.now(),
       info: {},
 
       data: [],
@@ -127,23 +143,23 @@ export default {
     statusText(status) {
       switch (status) {
         case 0:
-          return "已结束";
+          return "未开始";
         case 1:
           return "进行中";
         case 2:
-          return "未开始";
+          return "已结束";
         default:
-          return "未始即终";
+          return "时间错误";
       }
     },
     statusColor(status) {
       switch (status) {
         case 0:
-          return "#000000";
+          return "#755dd3";
         case 1:
           return "#4dc58f";
         case 2:
-          return "#755dd3";
+          return "#000000";
         default:
           return "#f04668";
       }
@@ -157,11 +173,11 @@ export default {
     this.isLoading = true;
     this.uid = JSON.parse(localStorage.getItem("access-teacher")).uid;
   },
-  mounted() {
-    axios
+  async mounted() {
+    this.isLoading = true;
+    await axios
       .get("/api/teachers/" + this.uid)
       .then((response) => {
-        this.isLoading = false;
         this.info = response.data.data;
       })
       .catch((error) => {
@@ -170,6 +186,7 @@ export default {
           message: "服务器异常：" + error,
           type: "is-danger",
         });
+        return;
       });
     var formatDateTime = function (date) {
       var y = date.getFullYear();
@@ -185,27 +202,25 @@ export default {
       second = second < 10 ? "0" + second : second;
       return y + "-" + m + "-" + d + " " + h + ":" + minute + ":" + second;
     };
-    axios
+    await axios
       .get("/api/exams", { params: { isPublished: true } })
-      .then(async (result) => {
-        for (var i of result.data.data) {
-          await axios.get("/api/teachers/" + i.creator).then((response) => {
-            var creator = response.data.data.name;
-            var status = 3;
-            var startTimeStamp = new Date(i.startTime);
-            var endTimeStamp = new Date(i.endTime);
-            if (startTimeStamp.getTime() <= endTimeStamp.getTime()) {
-              status = 0;
-              if (startTimeStamp.getTime() > this.currentTime) status = 2;
-              else if (endTimeStamp.getTime() > this.currentTime) status = 1;
-            }
-            this.data.push({
-              title: i.title,
-              creator: creator,
-              startTime: formatDateTime(startTimeStamp),
-              endTime: formatDateTime(endTimeStamp),
-              status: status,
-            });
+      .then((result) => {
+        var list = result.data.data;
+        for (let i of list) {
+          var startTimeStamp = new Date(i.startTime);
+          var endTimeStamp = new Date(i.endTime);
+          let status = 3;
+          if (startTimeStamp.getTime() <= endTimeStamp.getTime()) {
+            if (startTimeStamp.getTime() > Date.now()) status = 0;
+            else if (endTimeStamp.getTime() > Date.now()) status = 1;
+            else status = 2;
+          }
+          this.data.push({
+            title: i.title,
+            creatorName: i.creatorName,
+            startTime: formatDateTime(startTimeStamp),
+            endTime: formatDateTime(endTimeStamp),
+            status: status,
           });
         }
         this.isLoading = false;
@@ -217,7 +232,6 @@ export default {
           type: "is-danger",
         });
       });
-    this.isLoading = false;
   },
 };
 </script>

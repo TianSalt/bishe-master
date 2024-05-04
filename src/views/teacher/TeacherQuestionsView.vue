@@ -3,8 +3,9 @@
     <section class="sidebar-layout">
       <b-sidebar
         :fullheight="true"
-        style="text-align: center; font-weight: 300"
+        style="text-align: center; font-weight: 400"
         :can-cancel="false"
+        position="static"
         open
       >
         <div class="p-1">
@@ -16,7 +17,7 @@
               ><router-link to="/teacher/exams"
                 ><b-menu-item
                   icon="google-classroom"
-                  label="查看考试"
+                  label="所有考试"
                 ></b-menu-item></router-link
               ><router-link to="/teacher/papers"
                 ><b-menu-item
@@ -50,8 +51,15 @@
         </div>
       </b-sidebar>
 
-      <div style="padding-left: 280px"></div>
-      <div style="margin: 50px; width: 100%" v-if="mode === 'list'">
+      <div
+        style="
+          margin-left: 30px;
+          margin-right: 30px;
+          margin-top: 10px;
+          width: 100%;
+        "
+        v-if="mode === 'list'"
+      >
         <div style="display: flex; justify-content: space-between">
           <div>
             共计
@@ -77,9 +85,11 @@
           <b-table :data="data" paginated :per-page="perPage" :narrowed="true">
             <b-table-column
               :searchable="true"
-              field="name"
+              field="creatorName"
               label="贡献者"
+              width="150"
               sortable
+              centered
               v-slot="props"
             >
               {{ props.row.creatorName }}
@@ -87,7 +97,21 @@
 
             <b-table-column
               :searchable="true"
+              :numeric="true"
+              width="100"
+              field="questionId"
+              label="题目 ID"
+              sortable
+              v-slot="props"
+            >
+              {{ props.row.questionId }}
+            </b-table-column>
+
+            <b-table-column
+              field="questionType"
               label="题型"
+              width="100"
+              centered
               sortable
               v-slot="props"
             >
@@ -98,6 +122,7 @@
 
             <b-table-column
               :searchable="true"
+              field="content"
               label="预览"
               width="500"
               v-slot="props"
@@ -116,7 +141,6 @@
                 style="margin-right: 10px; height: 25.8px"
                 v-if="props.row.creator === uid"
               >
-                编辑
               </b-button>
               <b-button
                 class="button is-info is-light is-small"
@@ -125,7 +149,6 @@
                 style="height: 25.8px"
                 v-else
               >
-                查看
               </b-button>
               <b-button
                 class="button is-danger is-light is-small"
@@ -133,7 +156,6 @@
                 style="height: 25.8px"
                 v-if="props.row.creator === uid"
               >
-                删除
               </b-button>
             </b-table-column>
             <template #empty>
@@ -230,10 +252,11 @@
               <b-navbar-item tag="div">
                 <b-button
                   type="is-success"
-                  icon-left="upload"
+                  outlined
+                  icon-left="check-bold"
                   @click="confirmAdd"
                 >
-                  <strong>确定</strong>
+                  <strong>完成</strong>
                 </b-button>
               </b-navbar-item>
             </template>
@@ -323,8 +346,8 @@
           <b-navbar :fixed-bottom="true">
             <template #end>
               <b-navbar-item tag="div">
-                <b-button type="is-primary" icon-left="content-save">
-                  <strong>保存</strong>
+                <b-button type="is-success" outlined icon-left="check-bold">
+                  <strong>完成修改</strong>
                 </b-button>
               </b-navbar-item>
             </template>
@@ -332,7 +355,8 @@
         </div>
       </div>
 
-      <b-loading :active.sync="isLoading" :can-cancel="false"></b-loading>
+      <b-loading :active.sync="isLoading" :can-cancel="false"
+        position="static"></b-loading>
     </section>
   </div>
 </template>
@@ -408,6 +432,9 @@ export default {
           });
           return;
         });
+    },
+    observeQuestion(row) {
+      alert("该功能开发中！" + row);
     },
     confirmAdd() {
       this.isLoading = true;
