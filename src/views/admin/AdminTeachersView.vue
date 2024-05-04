@@ -427,7 +427,7 @@ export default {
           row.name +
           "</b>（工号：" +
           row.employeeId +
-          "）的账号吗？再次以同一工号注册时信息不会保留！",
+          "）的账号吗？这将删除其创建的所有试卷、考试及向题库贡献的所有题目！",
         confirmText: "Delete",
         type: "is-danger",
         hasIcon: true,
@@ -446,7 +446,7 @@ export default {
             .catch((error) => {
               this.isLoading = false;
               this.$buefy.notification.open({
-                message: "添加失败：" + error,
+                message: "服务器异常：" + error,
                 type: "is-danger",
               });
             });
@@ -481,7 +481,7 @@ export default {
       .catch((error) => {
         this.isLoading = false;
         this.$buefy.notification.open({
-          message: "网络异常：" + error,
+          message: "服务器异常：" + error,
           type: "is-danger",
         });
       });

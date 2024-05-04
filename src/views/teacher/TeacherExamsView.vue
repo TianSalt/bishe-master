@@ -22,16 +22,16 @@
               ><router-link to="/teacher/papers"
                 ><b-menu-item
                   icon="note-multiple-outline"
-                  label="试卷管理"
+                  label="我的试卷"
                 ></b-menu-item
               ></router-link>
               <router-link to="/teacher/questions"
                 ><b-menu-item label="题库" icon="bookshelf"></b-menu-item
               ></router-link>
             </b-menu-list>
-            <b-menu-list label="教师信息"
+            <b-menu-list label="个人信息"
               ><router-link to="/teacher/personal"
-                ><b-menu-item icon="account" label="个人资料"></b-menu-item
+                ><b-menu-item icon="account" :label="info.name"></b-menu-item
               ></router-link>
               <b-menu-item
                 icon="logout"
@@ -72,7 +72,11 @@
         <b-table
           class="table is-striped"
           :data="data"
+          :paginated="true"
+          :per-page="10"
+          :pagination-rounded="true"
           :sort-icon-size="null"
+          :striped="true"
         >
           <b-table-column label="标题" sortable v-slot="props">
             {{ props.row.title }}
@@ -88,7 +92,7 @@
             {{ props.row.endTime }}
           </b-table-column>
 
-          <b-table-column label="状态" field="status" sortable v-slot="props">
+          <b-table-column label="状态" field="status" v-slot="props">
             <span :style="{ color: statusColor(props.row.status) }">
               {{ statusText(props.row.status) }}
             </span>
@@ -113,6 +117,7 @@ export default {
     return {
       uid: null,
       currentTime: Date.now(),
+      info: {},
 
       data: [],
       isLoading: false,
@@ -128,7 +133,7 @@ export default {
         case 2:
           return "未开始";
         default:
-          return "未知状态";
+          return "未始即终";
       }
     },
     statusColor(status) {
@@ -140,7 +145,7 @@ export default {
         case 2:
           return "#755dd3";
         default:
-          return "#000000";
+          return "#f04668";
       }
     },
     logOut() {
@@ -153,6 +158,19 @@ export default {
     this.uid = JSON.parse(localStorage.getItem("access-teacher")).uid;
   },
   mounted() {
+    axios
+      .get("/api/teachers/" + this.uid)
+      .then((response) => {
+        this.isLoading = false;
+        this.info = response.data.data;
+      })
+      .catch((error) => {
+        this.isLoading = false;
+        this.$buefy.notification.open({
+          message: "服务器异常：" + error,
+          type: "is-danger",
+        });
+      });
     var formatDateTime = function (date) {
       var y = date.getFullYear();
       var m = date.getMonth() + 1;
@@ -169,15 +187,18 @@ export default {
     };
     axios
       .get("/api/exams", { params: { isPublished: true } })
-      .then((result) => {
+      .then(async (result) => {
         for (var i of result.data.data) {
-          axios.get("/api/teachers/" + i.creator).then((response) => {
+          await axios.get("/api/teachers/" + i.creator).then((response) => {
             var creator = response.data.data.name;
-            var status = 0;
+            var status = 3;
             var startTimeStamp = new Date(i.startTime);
             var endTimeStamp = new Date(i.endTime);
-            if (startTimeStamp.getTime() > this.currentTime) status = 2;
-            else if (endTimeStamp.getTime() > this.currentTime) status = 1;
+            if (startTimeStamp.getTime() <= endTimeStamp.getTime()) {
+              status = 0;
+              if (startTimeStamp.getTime() > this.currentTime) status = 2;
+              else if (endTimeStamp.getTime() > this.currentTime) status = 1;
+            }
             this.data.push({
               title: i.title,
               creator: creator,
@@ -192,7 +213,7 @@ export default {
       .catch((error) => {
         this.isLoading = false;
         this.$buefy.notification.open({
-          message: "网络异常：" + error,
+          message: "服务器异常：" + error,
           type: "is-danger",
         });
       });

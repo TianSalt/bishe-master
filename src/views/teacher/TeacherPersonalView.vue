@@ -21,19 +21,19 @@
               ><router-link to="/teacher/papers"
                 ><b-menu-item
                   icon="note-multiple-outline"
-                  label="试卷管理"
+                  label="我的试卷"
                 ></b-menu-item
               ></router-link>
               <router-link to="/teacher/questions"
                 ><b-menu-item label="题库" icon="bookshelf"></b-menu-item
               ></router-link>
             </b-menu-list>
-            <b-menu-list label="教师信息"
+            <b-menu-list label="个人信息"
               ><router-link to="/teacher/personal"
                 ><b-menu-item
                   active
                   icon="account"
-                  label="个人资料"
+                  :label="info.name"
                 ></b-menu-item
               ></router-link>
               <b-menu-item
@@ -56,7 +56,7 @@
 
       <div style="padding-left: 280px"></div>
 
-      <nav class="level" style="margin: 50px; width:100%">
+      <nav class="level" style="margin: 50px; width: 100%">
         <div class="level-item has-text-centered">
           <div>
             <p class="heading">工号</p>
@@ -107,7 +107,7 @@ export default {
       .catch((error) => {
         this.isLoading = false;
         this.$buefy.notification.open({
-          message: "网络异常：" + error,
+          message: "服务器异常：" + error,
           type: "is-danger",
         });
       });

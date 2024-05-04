@@ -11,6 +11,8 @@ import VueRouter from "vue-router";
 import axios from "axios";
 import TeacherExamsView from "@/views/teacher/TeacherExamsView.vue";
 import TeacherPersonalView from "@/views/teacher/TeacherPersonalView.vue";
+import TeacherPapersView from "../views/teacher/TeacherPapersView.vue";
+import TeacherQuestionsView from "@/views/teacher/TeacherQuestionsView.vue";
 
 Vue.use(VueRouter);
 
@@ -52,6 +54,11 @@ const routes = [
     component: TeacherExamsView,
   },
   {
+    path: "/teacher/papers",
+    name: "PapersExams",
+    component: TeacherPapersView,
+  },
+  {
     path: "/teacher/error",
     name: "TeacherError",
     component: TeacherErrorView,
@@ -65,6 +72,11 @@ const routes = [
     path: "/teacher/personal",
     name: "TeacherPersonal",
     component: TeacherPersonalView,
+  },
+  {
+    path: "/teacher/questions",
+    name: "TeacherQuestions",
+    component: TeacherQuestionsView,
   },
   {
     path: "*",
