@@ -33,8 +33,7 @@
               style="
                 display: flex;
                 flex-direction: column;
-                justify-content: center; /* 在竖直方向上居中 */
-                height: 100vh; /* 设置高度为视口高度，使容器铺满整个屏幕 */
+                justify-content: center;
               "
             >
               <section
@@ -258,7 +257,8 @@ export default {
     setStudents(examId) {
       this.studentModalActive = true;
       // loading
-      this.loadStudentsOfExam(examId);
+      if (this.allStudents === null)
+        this.loadStudentsOfExam(examId);
       // stop loading
       if (this.studentsToChangeTo.length === 0) this.InitiallyNoStudents = true;
       else this.InitiallyNoStudents = false;

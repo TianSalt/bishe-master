@@ -66,6 +66,7 @@
             label="标题"
             field="title"
             :centered="true"
+            width="500px"
             sortable
             v-slot="props"
           >
@@ -183,7 +184,7 @@ export default {
       .catch((error) => {
         this.isLoading = false;
         this.$buefy.notification.open({
-          message: "服务器异常：" + error,
+          message: "网络异常：" + error,
           type: "is-danger",
         });
         return;
@@ -191,16 +192,11 @@ export default {
     var formatDateTime = function (date) {
       var y = date.getFullYear();
       var m = date.getMonth() + 1;
-      m = m < 10 ? "0" + m : m;
       var d = date.getDate();
-      d = d < 10 ? "0" + d : d;
       var h = date.getHours();
-      h = h < 10 ? "0" + h : h;
       var minute = date.getMinutes();
       minute = minute < 10 ? "0" + minute : minute;
-      var second = date.getSeconds();
-      second = second < 10 ? "0" + second : second;
-      return y + "-" + m + "-" + d + " " + h + ":" + minute + ":" + second;
+      return y + " 年 " + m + " 月 " + d + " 日　" + h + ":" + minute;
     };
     await axios
       .get("/api/exams", { params: { isPublished: true } })
@@ -228,7 +224,7 @@ export default {
       .catch((error) => {
         this.isLoading = false;
         this.$buefy.notification.open({
-          message: "服务器异常：" + error,
+          message: "网络异常：" + error,
           type: "is-danger",
         });
       });

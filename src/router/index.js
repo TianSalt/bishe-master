@@ -101,6 +101,9 @@ router.beforeEach(async (to, from, next) => {
       .get("/api/check-token", { params: { token: teacher.token } })
       .then((response) => {
         if (response.data.code === 0) return next("/teacher/error");
+      })
+      .catch((error) => {
+        alert("网络异常：" + error);
       });
     next();
   } else next();

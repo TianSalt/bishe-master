@@ -62,9 +62,9 @@
         v-if="mode === 'list'"
       >
         <div style="display: flex; justify-content: space-between">
-          <div>
+          <div style="font-size: large">
             共计
-            <span style="color: #755dd3; font-weight: 800">{{
+            <span style="color: #755dd3; font-weight: 700; font-size: larger">{{
               data.length
             }}</span>
             份试卷
@@ -90,6 +90,7 @@
             field="title"
             sortable
             :searchable="true"
+            width="600px"
             v-slot="props"
           >
             {{ props.row.title }}
@@ -98,7 +99,7 @@
             label="状态"
             :centered="true"
             field="isPublished"
-            width="3em"
+            width="5em"
             sortable
             v-slot="props"
           >
@@ -106,7 +107,7 @@
               {{ statusText(props.row.isPublished) }}
             </span>
           </b-table-column>
-          <b-table-column v-slot="props">
+          <b-table-column v-slot="props" label="操作" centered>
             <b-button
               class="button is-danger"
               outlined
@@ -115,7 +116,6 @@
               v-if="props.row.isPublished !== true"
               @click="deleteExam(props.row)"
             >
-              删除
             </b-button>
             <b-button
               class="button is-info"
@@ -125,7 +125,6 @@
               v-if="props.row.isPublished === false"
               @click="editExam(props.row)"
             >
-              编辑
             </b-button>
             <b-button
               class="button is-info"
@@ -138,7 +137,7 @@
             <b-button
               class="button is-primary"
               outlined
-              icon-left="list-status"
+              icon-left="view-list-outline"
               style="margin-left: 10px; height: 25.8px"
               v-if="props.row.isPublished === true"
             >
@@ -149,7 +148,7 @@
               icon-left="account-group"
               style="margin-left: 10px; height: 25.8px"
               v-if="props.row.isPublished === true"
-              @lick="setExamStudent(props.row.examId)"
+              @click="setStudents(props.row.examId)"
             >
               考生
             </b-button>
@@ -171,6 +170,126 @@
             >
               撤下
             </b-button>
+            <b-modal v-model="studentModalActive" has-modal-card>
+              <div class="modal-card" style="width: 1050px; height: 600px">
+                <section class="modal-card-body">
+                  <div style="display: flex; flex: 1; align-items: center">
+                    <b-table
+                      :data="allStudents"
+                      :columns="studentColumns"
+                      :checked-rows.sync="checkedRows"
+                      paginated
+                      sticky-header
+                      height="400px"
+                      per-page="50"
+                      pagination-simple
+                      checkable
+                      checkbox-type="is-info"
+                      checkbox-position="right"
+                      narrowed
+                      striped
+                    >
+                      <template #bottom-left>
+                        <b>已选择：</b> {{ checkedRows.length }}
+                      </template>
+                    </b-table>
+                    <b-button
+                      icon-right="chevron-double-right"
+                      type="is-info is-light"
+                      rounded
+                      style="margin: 20px; font-weight: 500"
+                      @click="selectStudents"
+                      >添加</b-button
+                    >
+                    <header
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                      "
+                    >
+                      <header style="font-weight: 700; font-size: large">
+                        {{ props.row.title }}
+                      </header>
+                      <div style="padding: 10px">
+                        已选择
+                        <span
+                          style="
+                            font-weight: 700;
+                            font-size: large;
+                            color: #007ce8;
+                          "
+                          >{{ studentsToChangeTo.length }} </span
+                        >名考生
+                      </div>
+                      <!--
+                        To update:
+                        Use backend-sorting and backend-pagination props to let those tasks
+                        to the backend, then manage it with page-change and sort events.
+                        See: https://buefy.org/documentation/table#async-data
+                      -->
+                      <b-table
+                        :data="studentsToChangeTo"
+                        narrowed
+                        sticky-header
+                        sort-icon="menu-up"
+                      >
+                        <b-table-column
+                          field="name"
+                          label="姓名"
+                          width="100px"
+                          sortable
+                          centered
+                          v-slot="propsJ"
+                        >
+                          {{ propsJ.row.name }}
+                        </b-table-column>
+                        <b-table-column
+                          field="studentId"
+                          label="学号"
+                          width="70px"
+                          sortable
+                          numeric
+                          v-slot="propsJ"
+                        >
+                          {{ propsJ.row.studentId }}
+                        </b-table-column>
+                        <b-table-column label="移除" v-slot="{ index }">
+                          <b-button
+                            rounded
+                            type="is-danger is-light is-small"
+                            icon-left="close"
+                            style="height: 25.8px"
+                            @click="studentsToChangeTo.splice(index, 1)"
+                          ></b-button>
+                        </b-table-column>
+                      </b-table>
+                      <div
+                        style="display: flex; justify-content: space-between"
+                      >
+                        <b-button
+                          type="is-info"
+                          outlined
+                          icon-left="checkbox-multiple-marked-outline"
+                          :loading="buttonLoading"
+                          size="is-medium"
+                          @click="confirmStudents(props.row.examId)"
+                        >
+                          <div>更新名单</div></b-button
+                        ><b-button
+                          outlined
+                          :disabled="buttonDisabled"
+                          size="is-medium"
+                          @click="studentModalActive = false"
+                        >
+                          <div>取消</div>
+                        </b-button>
+                      </div>
+                    </header>
+                  </div>
+                </section>
+              </div>
+            </b-modal>
           </b-table-column>
 
           <b-table-column label="复制试题" :centered="true" v-slot="props">
@@ -218,45 +337,52 @@
               v-model="examToAdd.endTime"
             ></b-datetimepicker>
           </div>
-          <div style="display: flex; padding: 5px">
-            共&nbsp;
-            <span style="color: #755dd3; font-weight: 800">{{
-              questionsInExamToAdd.length
-            }}</span>
-            &nbsp;题
-          </div>
           <section>
             <b-table :data="questionsInExamToAdd">
-              <b-table-column label="题号" v-slot="{ index }">
-                {{ index + 1 }}
+              <b-table-column label="题号" centered v-slot="{ index }">
+                <div style="font-size: larger">{{ index + 1 }}</div>
               </b-table-column>
 
-              <b-table-column label="题型" v-slot="props">
+              <b-table-column label="题型" centered v-slot="props">
                 <span class="tag" :class="type(props.row.questionType)">
                   {{ ["单选", "多选", "填空"][props.row.questionType] }}
                 </span>
               </b-table-column>
 
-              <b-table-column label="预览" width="500" v-slot="props">
+              <b-table-column label="预览" centered width="500" v-slot="props">
                 {{ props.row.content | truncate(80) }}
               </b-table-column>
 
-              <b-table-column label="分值" v-slot="props">
+              <b-table-column
+                :label="'分值（总分：' + addTotalScore + '）'"
+                centered
+                v-slot="props"
+              >
                 <b-numberinput
                   v-model="props.row.score"
                   controls-position="compact"
+                  @input="
+                    addTotalScore = questionsInExamToAdd.reduce(function (
+                      acc,
+                      current
+                    ) {
+                      return acc + current.score;
+                    },
+                    0)
+                  "
                   min="0"
                 ></b-numberinput>
               </b-table-column>
 
-              <b-table-column v-slot="{ index }" label="操作">
+              <b-table-column v-slot="{ index }" label="删除" centered>
                 <b-button
                   rounded
                   type="is-danger is-light"
                   icon-left="close"
-                  style="margin-right: 20px"
                   @click="questionsInExamToAdd.splice(index, 1)"
                 ></b-button>
+              </b-table-column>
+              <b-table-column v-slot="{ index }" label="移动" centered>
                 <span
                   ><b-button
                     rounded
@@ -292,7 +418,6 @@
                     v-else
                   ></b-button
                 ></span>
-
                 <span
                   ><b-button
                     rounded
@@ -310,7 +435,7 @@
                 ></span>
               </b-table-column>
               <template #empty>
-                <div class="has-text-centered">无记录</div>
+                <div class="has-text-centered">点击➕从题库中选择题目</div>
               </template>
             </b-table>
             <b-button
@@ -319,7 +444,7 @@
               rounded
               @click="
                 addModalActive = true;
-                loadQuestions();
+                if (questions.length === 0) loadQuestions();
               "
             ></b-button>
           </section>
@@ -366,13 +491,15 @@
                     {{ props.row.content | truncate(80) }}
                   </b-table-column>
 
-                  <b-table-column label="选择此题" v-slot="props">
+                  <b-table-column label="选择此题" v-slot="props" centered>
                     <b-button
                       class="button is-success is-small"
                       icon-left="plus-thick"
                       rounded
                       @click="
-                        questionsInExamToAdd.push(props.row);
+                        let questionToAdd = props.row;
+                        questionToAdd.score = 0;
+                        questionsInExamToAdd.push(questionToAdd);
                         addModalActive = false;
                       "
                       style="margin-right: 10px; height: 25.8px"
@@ -380,7 +507,9 @@
                     </b-button>
                   </b-table-column>
                   <template #empty>
-                    <div class="has-text-centered">无记录</div>
+                    <div class="has-text-centered">
+                      暂无题目，您可以前往「题库」贡献题目
+                    </div>
                   </template>
                 </b-table>
               </section>
@@ -422,7 +551,10 @@ export default {
       questions: [],
       questionsInExamToAdd: [],
       questionsInExamToEdit: [],
+      addTotalScore: 0,
       isLoading: false,
+      buttonLoading: false,
+      buttonDisabled: false,
 
       questionTypes: [0, 1, 2],
 
@@ -436,6 +568,42 @@ export default {
       },
 
       addModalActive: false,
+
+      studentModalActive: false,
+      allStudents: [],
+      initialUids: [],
+      studentsToChangeTo: [],
+      checkedRows: [],
+      studentColumns: [
+        {
+          field: "major",
+          label: "专业",
+          width: "150",
+          centered: true,
+          searchable: true,
+        },
+        {
+          field: "schoolClass",
+          label: "班级",
+          width: "100",
+          centered: true,
+          searchable: true,
+        },
+        {
+          field: "studentId",
+          label: "学号",
+          width: "100",
+          numeric: true,
+          searchable: true,
+        },
+        {
+          field: "name",
+          label: "姓名",
+          width: "100",
+          centered: true,
+          searchable: true,
+        },
+      ],
     };
   },
   filters: {
@@ -456,20 +624,12 @@ export default {
         .catch((error) => {
           this.isLoading = false;
           this.$buefy.notification.open({
-            message: "服务器异常：" + error,
+            message: "网络异常：" + error,
             type: "is-danger",
             pauseOnHover: true,
           });
           return;
         });
-    },
-    setExamStudent(examId) {
-      console.log(examId);
-    },
-    logConsole() {
-      for (let i of this.questionsInExamToAdd) {
-        console.log(i.content);
-      }
     },
     swapQuestion(x, y) {
       let t = Object.assign({}, this.questionsInExamToAdd[x]);
@@ -482,6 +642,7 @@ export default {
     },
     backFromEdit() {
       this.$buefy.dialog.confirm({
+        hasIcon: true,
         message: "确定要返回吗？您所作出的更改将不会被保留！",
         type: "is-danger",
         onConfirm: () => {
@@ -496,19 +657,29 @@ export default {
         this.examToAdd.startTime > this.examToAdd.endTime
       ) {
         this.$buefy.dialog.alert({
-          message: "错误：结束时间早于开始时间",
+          message: "考试结束时间早于开始时间",
+          type: "is-danger",
+        });
+        return;
+      } else if (
+        this.examToAdd.startTime < new Date("1582-10-15T00:00:00") ||
+        this.examToAdd.endTime < new Date("1582-10-15T00:00:00")
+      ) {
+        this.$buefy.dialog.alert({
+          message: "暂不支持格里历之前的日期",
           type: "is-danger",
         });
         return;
       }
-      if (this.examToAdd.title === "") this.examToAdd = "无标题";
+      this.examToAdd.creator = this.uid;
+      if (this.examToAdd.title === "") this.examToAdd.title = "无标题";
       this.isLoading = true;
       axios
         .post("/api/exams", this.examToAdd) // returns examId
-        .then(async (result) => {
+        .then((result) => {
           let examId = result.data.data;
           for (var i = 0; i < this.questionsInExamToAdd.length; i++) {
-            await axios.post("/api/exam-questions", {
+            axios.post("/api/exam-questions", {
               examId: examId,
               questionIndex: i,
               questionId: this.questionsInExamToAdd[i].questionId,
@@ -517,17 +688,28 @@ export default {
           }
           this.isLoading = false;
           this.examToAdd.examId = examId;
-          this.data.push(this.examToAdd);
+          this.data.unshift(this.examToAdd);
           this.mode = "list";
+          this.addTotalScore = 0;
+          this.examToAdd = {
+            creator: this.uid,
+            title: "",
+            startTime: null,
+            endTime: null,
+            introduction: "",
+            isPublished: false,
+          };
+          this.questionsInExamToAdd = [];
           this.$buefy.notification.open({
-            message: "试卷已保存",
+            message: "试卷已添加",
             type: "is-success",
+            position: "is-bottom",
           });
         })
         .catch((error) => {
           this.isLoading = false;
           this.$buefy.notification.open({
-            message: "服务器异常：" + error,
+            message: "试卷添加失败：" + error,
             type: "is-danger",
             pauseOnHover: true,
           });
@@ -543,7 +725,8 @@ export default {
         (row.startTime === null || row.endTime === null)
       ) {
         this.$buefy.dialog.alert({
-          message: "设置了起止时间才能发布考试！",
+          hasIcon: true,
+          message: "设置了起止时间才能发布考试",
           type: "is-danger",
         });
         return;
@@ -554,22 +737,25 @@ export default {
         .then(() => {
           this.isLoading = false;
           row.isPublished = changeTo;
-          this.$buefy.dialog.alert(
+          this.$buefy.notification.open(
             changeTo
               ? {
-                  title: "试卷已公开",
-                  message: "您可以在「所有考试」中查看所有公开的试卷",
+                  message:
+                    "试卷已公开<br>您可以在「所有考试」中查看所有公开的试卷",
                   type: "is-success",
+                  position: "is-bottom",
                 }
               : {
-                  message: "已设置为非公开，作答信息保留",
+                  message: "已设置为非公开，考生名单及作答信息保留",
+                  type: "is-warning",
+                  position: "is-bottom",
                 }
           );
         })
         .catch((error) => {
           this.isLoading = false;
           this.$buefy.notification.open({
-            message: "服务器异常：" + error,
+            message: "网络异常：" + error,
             type: "is-danger",
           });
         });
@@ -577,7 +763,8 @@ export default {
     deleteExam(row) {
       this.$buefy.dialog.confirm({
         title: "删除试卷",
-        message: "确定要删除试卷<b>" + row.title + "</b>吗？这将删除所有作答！",
+        message:
+          "确定要删除试卷<b>" + row.title + "</b>吗？这将删除所有考生的作答！",
         confirmText: "Delete",
         type: "is-danger",
         hasIcon: true,
@@ -590,14 +777,14 @@ export default {
               this.$buefy.notification.open({
                 message: "试卷已删除！",
                 type: "is-link",
-                position: "is-bottom-right",
+                position: "is-bottom",
               });
               this.data.splice(this.data.indexOf(row), 1);
             })
             .catch((error) => {
               this.isLoading = false;
               this.$buefy.notification.open({
-                message: "服务器异常：" + error,
+                message: "网络异常：" + error,
                 type: "is-danger",
               });
             });
@@ -618,10 +805,10 @@ export default {
         .get("/api/exam-questions", { params: { examId: row.examId } })
         .then((response) => {
           let examQuestionsToCopy = response.data.data;
-          axios.post("/api/exams", examToCopy).then(async (result) => {
+          axios.post("/api/exams", examToCopy).then((result) => {
             let examId = result.data.data;
             for (let i of examQuestionsToCopy) {
-              await axios.post("/api/exam-questions", {
+              axios.post("/api/exam-questions", {
                 examId: examId,
                 questionIndex: i.questionIndex,
                 questionId: i.questionId,
@@ -635,18 +822,151 @@ export default {
             this.$buefy.notification.open({
               message: "试卷已复制",
               type: "is-success",
+              position: "is-bottom",
             });
           });
         })
         .catch((error) => {
           this.isLoading = false;
           this.$buefy.notification.open({
-            message: "服务器异常：" + error,
+            message: "网络异常：" + error,
             type: "is-danger",
             pauseOnHover: true,
           });
           return;
         });
+    },
+    loadAllStudents() {
+      axios
+        .get("/api/students")
+        .then((response) => {
+          this.allStudents = response.data.data;
+        })
+        .catch((error) => {
+          this.isLoading = false;
+          this.$buefy.notification.open({
+            message: "网络异常：" + error,
+            type: "is-danger",
+            pauseOnHover: true,
+          });
+          return;
+        });
+    },
+    loadStudentsOfExam(examId) {
+      axios
+        .get("/api/student-exams/" + examId)
+        .then((response) => {
+          this.studentsToChangeTo = response.data.data;
+          this.initialUids = Array.from(this.studentsToChangeTo).map(
+            (obj) => obj.uid
+          );
+        })
+        .catch((error) => {
+          this.isLoading = false;
+          this.$buefy.notification.open({
+            message: "网络异常：" + error,
+            type: "is-danger",
+            pauseOnHover: true,
+          });
+          return;
+        });
+    },
+    setStudents(examId) {
+      this.studentModalActive = true;
+      this.isLoading = true;
+      if (this.allStudents.length === 0) {
+        this.loadAllStudents();
+        this.loadStudentsOfExam(examId);
+        this.isLoading = false;
+      } else {
+        this.loadStudentsOfExam(examId);
+        this.isLoading = false;
+      }
+    },
+    selectStudents() {
+      for (let i of this.checkedRows) {
+        let found = false;
+        for (let j of this.studentsToChangeTo) {
+          if (i.uid === j.uid) {
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          this.studentsToChangeTo.push(i);
+        }
+      }
+      this.checkedRows = [];
+    },
+    confirmStudents(examId) {
+      this.$buefy.dialog.confirm({
+        hasIcon: true,
+        message:
+          "确定更新考生名单吗？<br>如果移除了原有的考生，其作答将被删除！",
+        type: "is-info",
+        onConfirm: async () => {
+          this.buttonLoading = true;
+          this.buttonDisabled = true;
+          let uidsToChangeTo = Array.from(this.studentsToChangeTo).map(
+            (obj) => obj.uid
+          );
+          let asyncOperations = [];
+          let success = true;
+          for (let i of this.initialUids) {
+            if (!success) break;
+            if (uidsToChangeTo.indexOf(i) === -1) {
+              asyncOperations.push(
+                axios
+                  .delete("/api/student-exams", {
+                    params: { examId, studentUid: i },
+                  })
+                  .catch((error) => {
+                    success = false;
+                    this.buttonLoading = false;
+                    this.buttonDisabled = false;
+                    this.$buefy.notification.open({
+                      message: "网络异常：" + error,
+                      type: "is-danger",
+                      pauseOnHover: true,
+                    });
+                  })
+              );
+            }
+          }
+          for (let i of uidsToChangeTo) {
+            if (!success) break;
+            if (this.initialUids.indexOf(i) === -1) {
+              asyncOperations.push(
+                axios
+                  .post("/api/student-exams", { examId, studentUid: i })
+                  .catch((error) => {
+                    success = false;
+                    this.buttonLoading = false;
+                    this.buttonDisabled = false;
+                    this.$buefy.notification.open({
+                      message: "网络异常：" + error,
+                      type: "is-danger",
+                      pauseOnHover: true,
+                    });
+                  })
+              );
+            }
+          }
+          await Promise.all(asyncOperations);
+          if (!success) return;
+          this.studentModalActive = false;
+          this.$buefy.notification.open({
+            message: "考生名单更新成功！",
+            type: "is-info",
+            position: "is-bottom",
+          });
+          this.buttonLoading = false;
+          this.buttonDisabled = false;
+          this.initialUids = [];
+          this.studentsToChangeTo = [];
+          this.mode = "list";
+        },
+      });
     },
     statusText(status) {
       switch (status) {
@@ -705,16 +1025,23 @@ export default {
           .then((result) => {
             this.isLoading = false;
             this.data = result.data.data;
+          })
+          .catch((error) => {
+            this.isLoading = false;
+            this.$buefy.notification.open({
+              message: "网络异常：" + error,
+              type: "is-danger",
+              pauseOnHover: true,
+            });
           });
       })
       .catch((error) => {
         this.isLoading = false;
         this.$buefy.notification.open({
-          message: "服务器异常：" + error,
+          message: "网络异常：" + error,
           type: "is-danger",
           pauseOnHover: true,
         });
-        return;
       });
   },
 };

@@ -48,8 +48,11 @@
         {{ mode === "login" ? "新教师注册" : "已有账号？登录" }}
       </p>
     </div>
-    <b-loading :active.sync="isLoading" :can-cancel="false"
-        position="static"></b-loading>
+    <b-loading
+      :active.sync="isLoading"
+      :can-cancel="false"
+      position="static"
+    ></b-loading>
   </section>
 </template>
 
@@ -99,6 +102,11 @@ export default {
           let result = response.data;
           if (result.code === 1) {
             localStorage.setItem("access-teacher", JSON.stringify(result.data));
+            this.$buefy.notification.open({
+              message: "登录成功",
+              type: "is-info",
+              position: "is-top",
+            });
             this.$router.replace({ path: "/teacher" });
           } else {
             this.$buefy.notification.open({
@@ -181,8 +189,6 @@ export default {
   },
 };
 </script>
-
-<!-- ... 其他样式 ... -->
 
 <style scoped>
 .login-register-section {

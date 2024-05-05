@@ -52,9 +52,9 @@
 
       <div style="margin: 10px">
         <div style="display: flex; justify-content: space-between">
-          <div>
+          <div style="font-size: large">
             共计
-            <span style="color: #755dd3; font-weight: 800">{{
+            <span style="color: #755dd3; font-weight: 700; font-size: larger">{{
               data.length
             }}</span>
             名教师
@@ -154,6 +154,7 @@
             label="姓名"
             :searchable="true"
             sortable
+            centered
             v-slot="props"
           >
             {{ props.row.name }}
@@ -247,8 +248,11 @@
         </b-table>
       </div>
 
-      <b-loading :active.sync="isLoading" :can-cancel="false"
-        position="static"></b-loading>
+      <b-loading
+        :active.sync="isLoading"
+        :can-cancel="false"
+        position="static"
+      ></b-loading>
     </section>
   </div>
 </template>
@@ -448,7 +452,7 @@ export default {
             .catch((error) => {
               this.isLoading = false;
               this.$buefy.notification.open({
-                message: "服务器异常：" + error,
+                message: "网络异常：" + error,
                 type: "is-danger",
               });
             });
@@ -483,7 +487,7 @@ export default {
       .catch((error) => {
         this.isLoading = false;
         this.$buefy.notification.open({
-          message: "服务器异常：" + error,
+          message: "网络异常：" + error,
           type: "is-danger",
         });
       });
