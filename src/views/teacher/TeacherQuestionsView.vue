@@ -1,60 +1,12 @@
 <template>
   <div class="sidebar-page">
     <section class="sidebar-layout">
-      <b-sidebar
-        :fullheight="true"
-        style="text-align: center; font-weight: 400"
-        :can-cancel="false"
-        position="static"
-        open
-      >
-        <div class="p-1">
-          <div class="block">
-            <img src="@/images/logo.png" alt="上机考试" />
-          </div>
-          <b-menu>
-            <b-menu-list label="教师端"
-              ><router-link to="/teacher/exams"
-                ><b-menu-item
-                  icon="google-classroom"
-                  label="所有考试"
-                ></b-menu-item></router-link
-              ><router-link to="/teacher/papers"
-                ><b-menu-item
-                  icon="note-multiple-outline"
-                  label="我的试卷"
-                ></b-menu-item
-              ></router-link>
-              <router-link to="/teacher/questions"
-                ><b-menu-item active label="题库" icon="bookshelf"></b-menu-item
-              ></router-link>
-            </b-menu-list>
-            <b-menu-list label="个人信息"
-              ><router-link to="/teacher/personal"
-                ><b-menu-item icon="account" :label="myName"></b-menu-item
-              ></router-link>
-              <b-menu-item
-                icon="logout"
-                label="退出"
-                @click="logOut"
-              ></b-menu-item>
-            </b-menu-list>
-            <b-menu-list label="大学生上机考试系统"
-              ><router-link to="/admin/about"
-                ><b-menu-item
-                  icon="information-outline"
-                  label="关于"
-                ></b-menu-item
-              ></router-link>
-            </b-menu-list>
-          </b-menu>
-        </div>
-      </b-sidebar>
+      <teacher-sidebar-view :uid="uid"></teacher-sidebar-view>
 
       <div
         style="
-          margin-left: 30px;
-          margin-right: 30px;
+          margin-left: 25.8px;
+          margin-right: 25.8px;
           margin-top: 10px;
           width: 100%;
         "
@@ -83,7 +35,7 @@
           See: https://buefy.org/documentation/table#async-data
         -->
         <section>
-          <b-table :data="data" paginated :per-page="perPage" :narrowed="true">
+          <b-table :data="data" paginated per-page="20" page-input>
             <b-table-column
               :searchable="true"
               :numeric="true"
@@ -131,28 +83,34 @@
             </b-table-column>
             <b-table-column label="操作" centered v-slot="props">
               <b-button
-                class="button is-info is-light is-small"
+                class="button is-info is-light"
                 icon-left="pencil"
+                style="height: 25.8px"
                 @click="
                   editedQuestion.questionId = props.row.questionId;
                   mode = 'edit';
                 "
-                style="margin-right: 10px; height: 25.8px"
                 v-if="props.row.creator === uid"
               >
               </b-button>
               <b-button
-                class="button is-info is-light is-small"
+                class="button is-info is-light"
                 icon-left="magnify"
+                style="margin-left: 10px; height: 25.8px"
                 @click="observeQuestion(props.row)"
-                style="height: 25.8px"
                 v-else
               >
               </b-button>
               <b-button
-                class="button is-danger is-light is-small"
+                icon-left="content-copy"
+                style="margin-left: 10px; height: 25.8px"
+                @click="copyQuestion(props.row)"
+              >
+              </b-button
+              ><b-button
+                class="button is-danger is-light"
                 icon-left="trash-can-outline"
-                style="height: 25.8px"
+                style="margin-left: 10px; height: 25.8px"
                 v-if="props.row.creator === uid"
               >
               </b-button>
@@ -168,7 +126,8 @@
         <nav class="navbar" style="background-color: transparent">
           <div class="navbar-brand">
             <a class="navbar-item" @click="mode = 'list'">
-              <b-icon icon="arrow-left" style="margin-right: 5px"> </b-icon>
+              <b-icon icon="chevron-left" style="margin-right: 5px">
+              </b-icon>
               <p>返回</p>
             </a>
           </div>
@@ -258,7 +217,7 @@ A. 选项内容 // 注意 A. 后有空格
           <b-button
             type="is-success"
             icon-left="check-bold"
-            style="margin: 30px"
+            style="margin: 25.8px"
             @click="confirmAdd"
           >
             <strong>提交</strong>
@@ -277,12 +236,14 @@ A. 选项内容 // 注意 A. 后有空格
 
 <script>
 import axios from "axios";
+import TeacherSidebarView from "../teacher/TeacherSidebarView.vue";
 // import md5 from "js-md5";
 export default {
+  components: {
+    TeacherSidebarView,
+  },
   data() {
     return {
-      perPage: 20,
-
       editedQuestion: {
         questionId: null,
         creator: this.uid,
@@ -292,7 +253,6 @@ export default {
       },
 
       uid: null,
-      myName: "",
       mode: "list",
 
       data: [],
@@ -345,6 +305,9 @@ export default {
         });
     },
     observeQuestion(row) {
+      alert("该功能开发中！" + row);
+    },
+    copyQuestion(row) {
       alert("该功能开发中！" + row);
     },
     confirmAdd() {
@@ -418,35 +381,7 @@ export default {
     this.uid = JSON.parse(localStorage.getItem("access-teacher")).uid;
   },
   mounted() {
-    axios
-      .get("/api/teachers/" + this.uid)
-      .then((response) => {
-        this.isLoading = false;
-        this.myName = response.data.data.name;
-      })
-      .catch((error) => {
-        this.isLoading = false;
-        this.$buefy.notification.open({
-          message: "网络异常：" + error,
-          type: "is-danger",
-          pauseOnHover: true,
-        });
-      });
     this.loadQuestions();
   },
 };
 </script>
-
-<style>
-.sidebar-page {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-height: 100%;
-}
-.sidebar-page .sidebar-layout {
-  display: flex;
-  flex-direction: row;
-  min-height: 100%;
-}
-</style>

@@ -104,7 +104,7 @@ export default {
             localStorage.setItem("access-teacher", JSON.stringify(result.data));
             this.$buefy.notification.open({
               message: "登录成功",
-              type: "is-info",
+              type: "is-success",
               position: "is-top",
             });
             this.$router.replace({ path: "/teacher" });

@@ -1,56 +1,7 @@
 <template>
   <div class="sidebar-page">
     <section class="sidebar-layout">
-      <b-sidebar
-        :fullheight="true"
-        style="text-align: center; font-weight: 400"
-        :can-cancel="false"
-        position="static"
-        open
-      >
-        <div class="p-1">
-          <div class="block">
-            <img src="@/images/logo.png" alt="上机考试" />
-          </div>
-          <b-menu>
-            <b-menu-list label="教师端"
-              ><router-link to="/teacher/exams"
-                ><b-menu-item
-                  icon="google-classroom"
-                  label="所有考试"
-                ></b-menu-item></router-link
-              ><router-link to="/teacher/papers"
-                ><b-menu-item
-                  active
-                  icon="note-multiple-outline"
-                  label="我的试卷"
-                ></b-menu-item
-              ></router-link>
-              <router-link to="/teacher/questions"
-                ><b-menu-item label="题库" icon="bookshelf"></b-menu-item
-              ></router-link>
-            </b-menu-list>
-            <b-menu-list label="个人信息"
-              ><router-link to="/teacher/personal"
-                ><b-menu-item icon="account" :label="info.name"></b-menu-item
-              ></router-link>
-              <b-menu-item
-                icon="logout"
-                label="退出"
-                @click="logOut"
-              ></b-menu-item>
-            </b-menu-list>
-            <b-menu-list label="大学生上机考试系统"
-              ><router-link to="/admin/about"
-                ><b-menu-item
-                  icon="information-outline"
-                  label="关于"
-                ></b-menu-item
-              ></router-link>
-            </b-menu-list>
-          </b-menu>
-        </div>
-      </b-sidebar>
+      <teacher-sidebar-view :uid="uid"></teacher-sidebar-view>
 
       <div
         style="
@@ -90,7 +41,7 @@
             field="title"
             sortable
             :searchable="true"
-            width="600px"
+            width="550px"
             v-slot="props"
           >
             {{ props.row.title }}
@@ -148,7 +99,7 @@
               icon-left="account-group"
               style="margin-left: 10px; height: 25.8px"
               v-if="props.row.isPublished === true"
-              @click="setStudents(props.row.examId)"
+              @click="setStudents(props.row)"
             >
               考生
             </b-button>
@@ -209,7 +160,7 @@
                       "
                     >
                       <header style="font-weight: 700; font-size: large">
-                        {{ props.row.title }}
+                        {{ currentExam.title }}
                       </header>
                       <div style="padding: 10px">
                         已选择
@@ -273,7 +224,7 @@
                           icon-left="checkbox-multiple-marked-outline"
                           :loading="buttonLoading"
                           size="is-medium"
-                          @click="confirmStudents(props.row.examId)"
+                          @click="confirmStudents(currentExam.examId)"
                         >
                           <div>更新名单</div></b-button
                         ><b-button
@@ -309,11 +260,12 @@
 
       <div style="width: 100%" v-if="mode === 'add'">
         <div class="navbar-brand">
-          <a class="navbar-item" @click="mode = 'list'">
-            <b-icon icon="arrow-left" style="margin-right: 5px"> </b-icon>
-            <p>返回</p>
+          <a class="navbar-item" @click="mode = 'list'" style="margin: 10px">
+            <b-icon icon="chevron-left" style="margin-right: 5px"> </b-icon>
+            <p style="font-weight: 800">返回</p>
           </a>
         </div>
+
         <div class="content" style="margin-left: 20px; margin-right: 20px">
           <b-input placeholder="标题" v-model="examToAdd.title"> </b-input>
           <b-input
@@ -340,7 +292,7 @@
           <section>
             <b-table :data="questionsInExamToAdd">
               <b-table-column label="题号" centered v-slot="{ index }">
-                <div style="font-size: larger">{{ index + 1 }}</div>
+                <div style="font-size: 24px">{{ index + 1 }}</div>
               </b-table-column>
 
               <b-table-column label="题型" centered v-slot="props">
@@ -435,7 +387,7 @@
                 ></span>
               </b-table-column>
               <template #empty>
-                <div class="has-text-centered">点击➕从题库中选择题目</div>
+                <div class="has-text-centered">点击➕从题库中选取题目</div>
               </template>
             </b-table>
             <b-button
@@ -538,12 +490,12 @@
 
 <script>
 import axios from "axios";
-// import md5 from "js-md5";
+import TeacherSidebarView from "./TeacherSidebarView.vue";
 export default {
+  components: { TeacherSidebarView },
   data() {
     return {
       uid: null,
-      info: {},
       mode: "list",
       selectedType: 0,
 
@@ -555,6 +507,14 @@ export default {
       isLoading: false,
       buttonLoading: false,
       buttonDisabled: false,
+      currentExam: {
+        creator: this.uid,
+        title: "",
+        startTime: null,
+        endTime: null,
+        introduction: "",
+        isPublished: false,
+      },
 
       questionTypes: [0, 1, 2],
 
@@ -817,7 +777,7 @@ export default {
             }
             this.isLoading = false;
             examToCopy.examId = examId;
-            this.data.push(examToCopy);
+            this.data.unshift(examToCopy);
             this.mode = "list";
             this.$buefy.notification.open({
               message: "试卷已复制",
@@ -871,17 +831,13 @@ export default {
           return;
         });
     },
-    setStudents(examId) {
-      this.studentModalActive = true;
+    setStudents(exam) {
       this.isLoading = true;
-      if (this.allStudents.length === 0) {
-        this.loadAllStudents();
-        this.loadStudentsOfExam(examId);
-        this.isLoading = false;
-      } else {
-        this.loadStudentsOfExam(examId);
-        this.isLoading = false;
-      }
+      this.currentExam = exam;
+      this.studentModalActive = true;
+      if (this.allStudents.length === 0) this.loadAllStudents();
+      this.loadStudentsOfExam(exam.examId);
+      this.isLoading = false;
     },
     selectStudents() {
       for (let i of this.checkedRows) {
@@ -893,7 +849,7 @@ export default {
           }
         }
         if (!found) {
-          this.studentsToChangeTo.push(i);
+          this.studentsToChangeTo.unshift(i);
         }
       }
       this.checkedRows = [];
@@ -903,7 +859,7 @@ export default {
         hasIcon: true,
         message:
           "确定更新考生名单吗？<br>如果移除了原有的考生，其作答将被删除！",
-        type: "is-info",
+        type: "is-warning",
         onConfirm: async () => {
           this.buttonLoading = true;
           this.buttonDisabled = true;
@@ -914,7 +870,7 @@ export default {
           let success = true;
           for (let i of this.initialUids) {
             if (!success) break;
-            if (uidsToChangeTo.indexOf(i) === -1) {
+            if (!uidsToChangeTo.includes(i)) {
               asyncOperations.push(
                 axios
                   .delete("/api/student-exams", {
@@ -935,7 +891,7 @@ export default {
           }
           for (let i of uidsToChangeTo) {
             if (!success) break;
-            if (this.initialUids.indexOf(i) === -1) {
+            if (!this.initialUids.includes(i)) {
               asyncOperations.push(
                 axios
                   .post("/api/student-exams", { examId, studentUid: i })
@@ -1017,23 +973,10 @@ export default {
   },
   mounted() {
     axios
-      .get("/api/teachers/" + this.uid)
-      .then((response) => {
-        this.info = response.data.data;
-        axios
-          .get("/api/exams", { params: { creator: this.uid } })
-          .then((result) => {
-            this.isLoading = false;
-            this.data = result.data.data;
-          })
-          .catch((error) => {
-            this.isLoading = false;
-            this.$buefy.notification.open({
-              message: "网络异常：" + error,
-              type: "is-danger",
-              pauseOnHover: true,
-            });
-          });
+      .get("/api/exams", { params: { creator: this.uid } })
+      .then((result) => {
+        this.isLoading = false;
+        this.data = result.data.data;
       })
       .catch((error) => {
         this.isLoading = false;
@@ -1046,17 +989,3 @@ export default {
   },
 };
 </script>
-
-<style>
-.sidebar-page {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-height: 100%;
-}
-.sidebar-page .sidebar-layout {
-  display: flex;
-  flex-direction: row;
-  min-height: 100%;
-}
-</style>

@@ -360,7 +360,7 @@ export default {
         md5(this.teacherModify.passwordHash) === row.passwordHash
       )
         return;
-      this.isModifyModalActive = false;
+
       let teacherHashed = Object.assign({}, this.teacherModify);
       if (this.teacherModify.passwordHash !== "")
         teacherHashed.passwordHash = md5(teacherHashed.passwordHash);
@@ -368,13 +368,21 @@ export default {
       this.isLoading = true;
       axios
         .put("/api/teachers", teacherHashed)
-        .then(() => {
+        .then((result) => {
+          this.isModifyModalActive = false;
           this.isLoading = false;
-          this.$buefy.notification.open({
-            message: "教师信息修改成功",
-            type: "is-success",
-          });
-          location.reload();
+          if (result.data.code === 1) {
+            this.$buefy.notification.open({
+              message: "教师信息修改成功",
+              type: "is-success",
+            });
+            location.reload();
+          } else {
+            this.$buefy.notification.open({
+              message: result.data.msg,
+              type: "is-danger",
+            });
+          }
         })
         .catch((error) => {
           this.isLoading = false;
@@ -408,14 +416,21 @@ export default {
       this.isLoading = true;
       axios
         .post("/api/teachers", teacherHashed)
-        .then(() => {
+        .then((result) => {
           this.isLoading = false;
           this.isAddModalActive = false;
-          this.$buefy.notification.open({
-            message: "教师已成功注册",
-            type: "is-success",
-          });
-          location.reload();
+          if (result.data.code === 1) {
+            this.$buefy.notification.open({
+              message: "教师已成功注册",
+              type: "is-success",
+            });
+            location.reload();
+          } else {
+            this.$buefy.notification.open({
+              message: result.data.msg,
+              type: "is-danger",
+            });
+          }
         })
         .catch((error) => {
           this.isLoading = false;

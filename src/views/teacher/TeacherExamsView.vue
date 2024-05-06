@@ -1,56 +1,7 @@
 <template>
   <div class="sidebar-page">
     <section class="sidebar-layout">
-      <b-sidebar
-        :fullheight="true"
-        style="text-align: center; font-weight: 400"
-        :can-cancel="false"
-        position="static"
-        open
-      >
-        <div class="p-1">
-          <div class="block">
-            <img src="@/images/logo.png" alt="上机考试" />
-          </div>
-          <b-menu>
-            <b-menu-list label="教师端"
-              ><router-link to="/teacher/exams"
-                ><b-menu-item
-                  active
-                  icon="google-classroom"
-                  label="所有考试"
-                ></b-menu-item></router-link
-              ><router-link to="/teacher/papers"
-                ><b-menu-item
-                  icon="note-multiple-outline"
-                  label="我的试卷"
-                ></b-menu-item
-              ></router-link>
-              <router-link to="/teacher/questions"
-                ><b-menu-item label="题库" icon="bookshelf"></b-menu-item
-              ></router-link>
-            </b-menu-list>
-            <b-menu-list label="个人信息"
-              ><router-link to="/teacher/personal"
-                ><b-menu-item icon="account" :label="info.name"></b-menu-item
-              ></router-link>
-              <b-menu-item
-                icon="logout"
-                label="退出"
-                @click="logOut"
-              ></b-menu-item>
-            </b-menu-list>
-            <b-menu-list label="大学生上机考试系统"
-              ><router-link to="/admin/about"
-                ><b-menu-item
-                  icon="information-outline"
-                  label="关于"
-                ></b-menu-item
-              ></router-link>
-            </b-menu-list>
-          </b-menu>
-        </div>
-      </b-sidebar>
+      <teacher-sidebar-view :uid="uid"></teacher-sidebar-view>
 
       <div style="margin: 50px; width: 100%">
         <b-table
@@ -129,12 +80,12 @@
 
 <script>
 import axios from "axios";
-// import md5 from "js-md5";
+import TeacherSidebarView from "./TeacherSidebarView.vue";
 export default {
+  components: { TeacherSidebarView },
   data() {
     return {
       uid: null,
-      info: {},
 
       data: [],
       isLoading: false,
@@ -171,24 +122,10 @@ export default {
     },
   },
   created() {
-    this.isLoading = true;
     this.uid = JSON.parse(localStorage.getItem("access-teacher")).uid;
   },
   async mounted() {
     this.isLoading = true;
-    await axios
-      .get("/api/teachers/" + this.uid)
-      .then((response) => {
-        this.info = response.data.data;
-      })
-      .catch((error) => {
-        this.isLoading = false;
-        this.$buefy.notification.open({
-          message: "网络异常：" + error,
-          type: "is-danger",
-        });
-        return;
-      });
     var formatDateTime = function (date) {
       var y = date.getFullYear();
       var m = date.getMonth() + 1;
