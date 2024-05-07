@@ -116,7 +116,7 @@
               </b-button>
             </b-table-column>
             <template #empty>
-              <div class="has-text-centered">无记录</div>
+              <div class="has-text-centered">题库空空如也，请点击右上角「贡献题目」</div>
             </template>
           </b-table>
         </section>
@@ -326,7 +326,7 @@ export default {
         .then(() => {
           this.isLoading = false;
           this.$buefy.notification.open({
-            message: "题目已加入题库",
+            message: "题目已加入题库，感谢您的贡献！",
             type: "is-success",
           });
           this.mode = "list";

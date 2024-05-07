@@ -48,11 +48,7 @@
         {{ mode === "login" ? "新教师注册" : "已有账号？登录" }}
       </p>
     </div>
-    <b-loading
-      :active.sync="isLoading"
-      :can-cancel="false"
-      position="static"
-    ></b-loading>
+    <b-loading :active.sync="isLoading"></b-loading>
   </section>
 </template>
 

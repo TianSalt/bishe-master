@@ -25,7 +25,7 @@
             icon-left="note-plus-outline"
             outlined
             @click="mode = 'add'"
-            >添加试卷</b-button
+            >新建试卷</b-button
           >
         </div>
         <b-table
@@ -88,11 +88,10 @@
             <b-button
               class="button is-primary"
               outlined
-              icon-left="view-list-outline"
+              icon-left="poll"
               style="margin-left: 10px; height: 25.8px"
               v-if="props.row.isPublished === true"
             >
-              成绩
             </b-button>
             <b-button
               class="button is-info"
@@ -105,7 +104,7 @@
             </b-button>
             <b-button
               class="button is-success"
-              icon-left="arrow-expand-up"
+              icon-left="eye"
               style="margin-left: 10px; height: 25.8px"
               v-if="props.row.isPublished === false"
               @click="togglePublish(props.row, true)"
@@ -114,7 +113,7 @@
             </b-button>
             <b-button
               class="button is-warning"
-              icon-left="arrow-expand-down"
+              icon-left="eye-off"
               style="margin-left: 10px; height: 25.8px"
               v-if="props.row.isPublished === true"
               @click="togglePublish(props.row, false)"
@@ -258,241 +257,31 @@
         </b-table>
       </div>
 
-      <div style="width: 100%" v-if="mode === 'add'">
-        <div class="navbar-brand">
-          <a class="navbar-item" @click="mode = 'list'" style="margin: 10px">
-            <b-icon icon="chevron-left" style="margin-right: 5px"> </b-icon>
-            <p style="font-weight: 800">返回</p>
-          </a>
-        </div>
+      <teacher-papers-modify-view
+        v-if="mode === 'add'"
+        :mode="mode"
+        :exam="examToAdd"
+        @backToList="mode = 'list'"
+      ></teacher-papers-modify-view>
 
-        <div class="content" style="margin-left: 20px; margin-right: 20px">
-          <b-input placeholder="标题" v-model="examToAdd.title"> </b-input>
-          <b-input
-            placeholder="序言"
-            v-model="examToAdd.introduction"
-            style="margin-top: 10px"
-          >
-          </b-input>
-          <div style="display: flex; padding: 20px">
-            <b-datetimepicker
-              horizontal-time-picker
-              placeholder="考试开始时间"
-              v-model="examToAdd.startTime"
-              :editable="true"
-            ></b-datetimepicker>
-            <b-icon icon="tilde" style="padding: 20px"></b-icon>
-            <b-datetimepicker
-              horizontal-time-picker
-              placeholder="考试结束时间"
-              :editable="true"
-              v-model="examToAdd.endTime"
-            ></b-datetimepicker>
-          </div>
-          <section>
-            <b-table :data="questionsInExamToAdd">
-              <b-table-column label="题号" centered v-slot="{ index }">
-                <div style="font-size: 24px">{{ index + 1 }}</div>
-              </b-table-column>
+      <teacher-papers-modify-view
+        v-if="mode === 'edit'"
+        :mode="mode"
+        :exam="examToEdit"
+        @backToList="mode = 'list'"
+      ></teacher-papers-modify-view>
 
-              <b-table-column label="题型" centered v-slot="props">
-                <span class="tag" :class="type(props.row.questionType)">
-                  {{ ["单选", "多选", "填空"][props.row.questionType] }}
-                </span>
-              </b-table-column>
-
-              <b-table-column label="预览" centered width="500" v-slot="props">
-                {{ props.row.content | truncate(80) }}
-              </b-table-column>
-
-              <b-table-column
-                :label="'分值（总分：' + addTotalScore + '）'"
-                centered
-                v-slot="props"
-              >
-                <b-numberinput
-                  v-model="props.row.score"
-                  controls-position="compact"
-                  @input="
-                    addTotalScore = questionsInExamToAdd.reduce(function (
-                      acc,
-                      current
-                    ) {
-                      return acc + current.score;
-                    },
-                    0)
-                  "
-                  min="0"
-                ></b-numberinput>
-              </b-table-column>
-
-              <b-table-column v-slot="{ index }" label="删除" centered>
-                <b-button
-                  rounded
-                  type="is-danger is-light"
-                  icon-left="close"
-                  @click="questionsInExamToAdd.splice(index, 1)"
-                ></b-button>
-              </b-table-column>
-              <b-table-column v-slot="{ index }" label="移动" centered>
-                <span
-                  ><b-button
-                    rounded
-                    icon-left="chevron-double-up"
-                    v-if="index !== 0"
-                    @click="
-                      var questionToMoveTop = questionsInExamToAdd[index];
-                      questionsInExamToAdd.splice(index, 1);
-                      questionsInExamToAdd.unshift(questionToMoveTop);
-                    "
-                  >
-                  </b-button
-                  ><b-button
-                    rounded
-                    disabled
-                    icon-left="chevron-double-up"
-                    v-else
-                  >
-                  </b-button
-                ></span>
-                <span
-                  ><b-button
-                    rounded
-                    icon-left="chevron-up"
-                    v-if="index !== 0"
-                    @click="swapQuestion(index, index - 1)"
-                  >
-                  </b-button>
-                  <b-button
-                    disabled
-                    rounded
-                    icon-left="chevron-up"
-                    v-else
-                  ></b-button
-                ></span>
-                <span
-                  ><b-button
-                    rounded
-                    icon-left="chevron-down"
-                    v-if="index !== questionsInExamToAdd.length - 1"
-                    @click="swapQuestion(index, index + 1)"
-                  >
-                  </b-button
-                  ><b-button
-                    disabled
-                    rounded
-                    icon-left="chevron-down"
-                    v-else
-                  ></b-button
-                ></span>
-              </b-table-column>
-              <template #empty>
-                <div class="has-text-centered">点击➕从题库中选取题目</div>
-              </template>
-            </b-table>
-            <b-button
-              type="is-primary"
-              icon-left="plus"
-              rounded
-              @click="
-                addModalActive = true;
-                if (questions.length === 0) loadQuestions();
-              "
-            ></b-button>
-          </section>
-          <b-modal v-model="addModalActive" has-modal-card>
-            <div class="modal-card" style="width: auto">
-              <section class="modal-card-body">
-                <b-table
-                  :data="questions"
-                  paginated
-                  :per-page="10"
-                  :narrowed="true"
-                >
-                  <b-table-column
-                    :searchable="true"
-                    :numeric="true"
-                    field="questionId"
-                    label="题目 ID"
-                    width="80"
-                    sortable
-                    v-slot="props"
-                  >
-                    <span class="questionId">
-                      {{ props.row.questionId }}
-                    </span>
-                  </b-table-column>
-                  <b-table-column
-                    field="questionType"
-                    label="题型"
-                    sortable
-                    v-slot="props"
-                  >
-                    <span class="tag" :class="type(props.row.questionType)">
-                      {{ ["单选", "多选", "填空"][props.row.questionType] }}
-                    </span>
-                  </b-table-column>
-
-                  <b-table-column
-                    :searchable="true"
-                    field="content"
-                    label="预览"
-                    width="500"
-                    v-slot="props"
-                  >
-                    {{ props.row.content | truncate(80) }}
-                  </b-table-column>
-
-                  <b-table-column label="选择此题" v-slot="props" centered>
-                    <b-button
-                      class="button is-success is-small"
-                      icon-left="plus-thick"
-                      rounded
-                      @click="
-                        let questionToAdd = props.row;
-                        questionToAdd.score = 0;
-                        questionsInExamToAdd.push(questionToAdd);
-                        addModalActive = false;
-                      "
-                      style="margin-right: 10px; height: 25.8px"
-                    >
-                    </b-button>
-                  </b-table-column>
-                  <template #empty>
-                    <div class="has-text-centered">
-                      暂无题目，您可以前往「题库」贡献题目
-                    </div>
-                  </template>
-                </b-table>
-              </section>
-            </div>
-          </b-modal>
-        </div>
-        <b-button
-          type="is-success"
-          outlined
-          icon-left="check-bold"
-          style="margin-bottom: 30px"
-          @click="addSave"
-        >
-          <strong>保存</strong>
-        </b-button>
-      </div>
-
-      <b-loading
-        :active.sync="isLoading"
-        :can-cancel="false"
-        position="static"
-      ></b-loading>
+      <b-loading :active.sync="isLoading"></b-loading>
     </section>
   </div>
 </template>
 
 <script>
 import axios from "axios";
-import TeacherSidebarView from "./TeacherSidebarView.vue";
+import TeacherSidebarView from "../teacher/TeacherSidebarView.vue";
+import TeacherPapersModifyView from "../teacher/TeacherPapersModifyView.vue";
 export default {
-  components: { TeacherSidebarView },
+  components: { TeacherSidebarView, TeacherPapersModifyView },
   data() {
     return {
       uid: null,
@@ -500,15 +289,11 @@ export default {
       selectedType: 0,
 
       data: [],
-      questions: [],
-      questionsInExamToAdd: [],
-      questionsInExamToEdit: [],
-      addTotalScore: 0,
       isLoading: false,
       buttonLoading: false,
       buttonDisabled: false,
       currentExam: {
-        creator: this.uid,
+        creator: null,
         title: "",
         startTime: null,
         endTime: null,
@@ -516,18 +301,23 @@ export default {
         isPublished: false,
       },
 
-      questionTypes: [0, 1, 2],
+      examToEdit: {
+        creator: null,
+        title: "",
+        startTime: null,
+        endTime: null,
+        introduction: "",
+        isPublished: false,
+      },
 
       examToAdd: {
-        creator: this.uid,
+        creator: null,
         title: "",
         startTime: null,
         endTime: null,
         introduction: "",
         isPublished: false,
       },
-
-      addModalActive: false,
 
       studentModalActive: false,
       allStudents: [],
@@ -566,118 +356,10 @@ export default {
       ],
     };
   },
-  filters: {
-    truncate(value, length) {
-      return value.length > length ? value.substr(0, length) + "..." : value;
-    },
-  },
-
   methods: {
-    loadQuestions() {
-      this.isLoading = true;
-      axios
-        .get("/api/questions")
-        .then((result) => {
-          this.questions = result.data.data;
-          this.isLoading = false;
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.$buefy.notification.open({
-            message: "网络异常：" + error,
-            type: "is-danger",
-            pauseOnHover: true,
-          });
-          return;
-        });
-    },
-    swapQuestion(x, y) {
-      let t = Object.assign({}, this.questionsInExamToAdd[x]);
-      this.questionsInExamToAdd[x] = Object.assign(
-        {},
-        this.questionsInExamToAdd[y]
-      );
-      this.questionsInExamToAdd[y] = Object.assign({}, t);
-      this.questionsInExamToAdd = this.questionsInExamToAdd.slice();
-    },
-    backFromEdit() {
-      this.$buefy.dialog.confirm({
-        hasIcon: true,
-        message: "确定要返回吗？您所作出的更改将不会被保留！",
-        type: "is-danger",
-        onConfirm: () => {
-          this.mode = "list";
-        },
-      });
-    },
-    addSave() {
-      if (
-        this.examToAdd.startTime &&
-        this.examToAdd.endTime &&
-        this.examToAdd.startTime > this.examToAdd.endTime
-      ) {
-        this.$buefy.dialog.alert({
-          message: "考试结束时间早于开始时间",
-          type: "is-danger",
-        });
-        return;
-      } else if (
-        this.examToAdd.startTime < new Date("1582-10-15T00:00:00") ||
-        this.examToAdd.endTime < new Date("1582-10-15T00:00:00")
-      ) {
-        this.$buefy.dialog.alert({
-          message: "暂不支持格里历之前的日期",
-          type: "is-danger",
-        });
-        return;
-      }
-      this.examToAdd.creator = this.uid;
-      if (this.examToAdd.title === "") this.examToAdd.title = "无标题";
-      this.isLoading = true;
-      axios
-        .post("/api/exams", this.examToAdd) // returns examId
-        .then((result) => {
-          let examId = result.data.data;
-          for (var i = 0; i < this.questionsInExamToAdd.length; i++) {
-            axios.post("/api/exam-questions", {
-              examId: examId,
-              questionIndex: i,
-              questionId: this.questionsInExamToAdd[i].questionId,
-              score: this.questionsInExamToAdd[i].score,
-            });
-          }
-          this.isLoading = false;
-          this.examToAdd.examId = examId;
-          this.data.unshift(this.examToAdd);
-          this.mode = "list";
-          this.addTotalScore = 0;
-          this.examToAdd = {
-            creator: this.uid,
-            title: "",
-            startTime: null,
-            endTime: null,
-            introduction: "",
-            isPublished: false,
-          };
-          this.questionsInExamToAdd = [];
-          this.$buefy.notification.open({
-            message: "试卷已添加",
-            type: "is-success",
-            position: "is-bottom",
-          });
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.$buefy.notification.open({
-            message: "试卷添加失败：" + error,
-            type: "is-danger",
-            pauseOnHover: true,
-          });
-          return;
-        });
-    },
     editExam(row) {
-      alert("该功能尚未开发" + row);
+      this.mode = "edit";
+      this.examToEdit = row;
     },
     togglePublish(row, changeTo) {
       if (
@@ -692,11 +374,11 @@ export default {
         return;
       }
       this.isLoading = true;
+      row.isPublished = changeTo;
       axios
-        .put("/api/exams", { examId: row.examId, isPublished: changeTo })
+        .put("/api/exams", row)
         .then(() => {
           this.isLoading = false;
-          row.isPublished = changeTo;
           this.$buefy.notification.open(
             changeTo
               ? {
@@ -714,6 +396,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
+          row.isPublished = !row.isPublished;
           this.$buefy.notification.open({
             message: "网络异常：" + error,
             type: "is-danger",
@@ -724,7 +407,9 @@ export default {
       this.$buefy.dialog.confirm({
         title: "删除试卷",
         message:
-          "确定要删除试卷<b>" + row.title + "</b>吗？这将删除所有考生的作答！",
+          "确定要删除试卷<span style='font-weight: 600'>" +
+          row.title +
+          "</span>吗？<br>这将删除所有考生的作答！",
         confirmText: "Delete",
         type: "is-danger",
         hasIcon: true,
@@ -737,7 +422,7 @@ export default {
               this.$buefy.notification.open({
                 message: "试卷已删除！",
                 type: "is-link",
-                position: "is-bottom",
+                position: "is-top",
               });
               this.data.splice(this.data.indexOf(row), 1);
             })
@@ -782,7 +467,7 @@ export default {
             this.$buefy.notification.open({
               message: "试卷已复制",
               type: "is-success",
-              position: "is-bottom",
+              position: "is-top",
             });
           });
         })
@@ -856,6 +541,7 @@ export default {
     },
     confirmStudents(examId) {
       this.$buefy.dialog.confirm({
+        title: "更新考生名单",
         hasIcon: true,
         message:
           "确定更新考生名单吗？<br>如果移除了原有的考生，其作答将被删除！",
@@ -914,7 +600,7 @@ export default {
           this.$buefy.notification.open({
             message: "考生名单更新成功！",
             type: "is-info",
-            position: "is-bottom",
+            position: "is-top",
           });
           this.buttonLoading = false;
           this.buttonDisabled = false;
@@ -944,39 +630,23 @@ export default {
           return "#f04668";
       }
     },
-    logOut() {
-      localStorage.removeItem("access-teacher");
-      this.$router.push("/teacher/login");
-    },
-    type(value) {
-      switch (value) {
-        case 0:
-          return "is-link is-light";
-        case 1:
-          return "is-info is-light";
-        case 2:
-          return "is-warning is-light";
-        case 3:
-          return "is-danger is-light";
-        case 4:
-          return "is-success is-light";
-        case 5:
-          return "is-primary is-light";
-        default:
-          break;
-      }
-    },
   },
   created() {
     this.isLoading = true;
     this.uid = JSON.parse(localStorage.getItem("access-teacher")).uid;
+    this.examToAdd.creator = this.uid;
+    this.examToEdit.creator = this.uid;
   },
   mounted() {
     axios
       .get("/api/exams", { params: { creator: this.uid } })
       .then((result) => {
         this.isLoading = false;
-        this.data = result.data.data;
+        for (let i of result.data.data) {
+          if (i.startTime) i.startTime = new Date(i.startTime);
+          if (i.endTime) i.endTime = new Date(i.endTime);
+          this.data.push(i);
+        }
       })
       .catch((error) => {
         this.isLoading = false;
