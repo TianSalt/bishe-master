@@ -243,7 +243,7 @@
           </b-table-column>
 
           <template #empty>
-            <div class="has-text-centered">无记录</div>
+            <div v-if="!isLoading" class="has-text-centered">无记录</div>
           </template>
         </b-table>
       </div>

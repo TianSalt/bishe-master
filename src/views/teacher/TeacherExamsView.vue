@@ -3,7 +3,17 @@
     <section class="sidebar-layout">
       <teacher-sidebar-view :uid="uid"></teacher-sidebar-view>
 
-      <div style="margin: 50px; width: 100%">
+      <div
+        style="
+          margin-left: 30px;
+          margin-right: 30px;
+          margin-top: 10px;
+          width: 100%;
+        "
+      >
+        <section style="color: #755dd3; text-align: left">
+          此处展示所有公开的考试。您在创建试卷后点击「发布」即可公开试卷。
+        </section>
         <b-table
           class="table is-striped"
           :data="data"
@@ -64,7 +74,7 @@
           </b-table-column>
 
           <template #empty>
-            <div class="has-text-centered">无记录</div>
+            <div v-if="!isLoading" class="has-text-centered">无记录</div>
           </template>
         </b-table>
       </div>
@@ -88,6 +98,7 @@ export default {
       uid: null,
 
       data: [],
+      timeDiff: new Date().getTimezoneOffset() * 60000,
       isLoading: false,
     };
   },
@@ -140,8 +151,10 @@ export default {
       .then((result) => {
         var list = result.data.data;
         for (let i of list) {
-          var startTimeStamp = new Date(i.startTime);
-          var endTimeStamp = new Date(i.endTime);
+          var startTimeStamp = new Date(
+            new Date(i.startTime).getTime() - this.timeDiff
+          );
+          var endTimeStamp = new Date(new Date(i.endTime) - this.timeDiff);
           let status = 3;
           if (startTimeStamp.getTime() <= endTimeStamp.getTime()) {
             if (startTimeStamp.getTime() > Date.now()) status = 0;

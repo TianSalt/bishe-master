@@ -28,12 +28,6 @@
             >贡献题目</b-button
           >
         </div>
-        <!--
-          To update:
-          Use backend-sorting and backend-pagination props to let those tasks
-          to the backend, then manage it with page-change and sort events.
-          See: https://buefy.org/documentation/table#async-data
-        -->
         <section>
           <b-table :data="data" paginated per-page="20" page-input>
             <b-table-column
@@ -116,7 +110,9 @@
               </b-button>
             </b-table-column>
             <template #empty>
-              <div class="has-text-centered">题库空空如也，请点击右上角「贡献题目」</div>
+              <div v-if="!isLoading" class="has-text-centered">
+                题库空空如也，请点击右上角「贡献题目」
+              </div>
             </template>
           </b-table>
         </section>
@@ -126,8 +122,7 @@
         <nav class="navbar" style="background-color: transparent">
           <div class="navbar-brand">
             <a class="navbar-item" @click="mode = 'list'">
-              <b-icon icon="chevron-left" style="margin-right: 5px">
-              </b-icon>
+              <b-icon icon="chevron-left" style="margin-right: 5px"> </b-icon>
               <p>返回</p>
             </a>
           </div>
@@ -179,13 +174,14 @@
                 <span style="color: #755dd3; font-weight: 800">格式：</span>
                 <pre>
 题干
-A. 选项内容 // 注意 A. 后有空格
-...</pre
+#选项一内容
+#选项二内容
+...（至多 26 项）</pre
                 >
               </div>
               <div v-else-if="newQuestion.questionType === 2">
                 <span style="color: #755dd3; font-weight: 800">格式：</span
-                ><br />使用 <code>$_</code> 表示空的位置。暂不支持多个空。
+                ><br />使用 <code>#_</code> 表示空的位置。暂不支持多个空。
               </div>
               <div v-else>
                 <span style="color: #755dd3; font-weight: 800"
@@ -206,7 +202,7 @@ A. 选项内容 // 注意 A. 后有空格
           >
             <div v-if="newQuestion.questionType === 0">请输入一个字母：</div>
             <div v-if="newQuestion.questionType === 1">
-              请输入一个或多个字母：
+              请输入一个或（按顺序）多个字母：
             </div>
             <div v-if="newQuestion.questionType === 2">请输入应填的内容：</div>
           </div>
@@ -311,6 +307,8 @@ export default {
       alert("该功能开发中！" + row);
     },
     confirmAdd() {
+      this.newQuestion.content = this.newQuestion.content.trim();
+      this.newQuestion.correctAnswer = this.newQuestion.correctAnswer.trim();
       if (!this.newQuestion.content || !this.newQuestion.correctAnswer) {
         this.$buefy.notification.open({
           message: "题目、答案不能为空",

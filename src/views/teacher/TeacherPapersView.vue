@@ -24,7 +24,7 @@
             type="is-primary"
             icon-left="note-plus-outline"
             outlined
-            @click="mode = 'add'"
+            @click="addExam"
             >新建试卷</b-button
           >
         </div>
@@ -83,6 +83,7 @@
               icon-left="magnify"
               style="margin-left: 10px; height: 25.8px"
               v-if="props.row.isPublished === true"
+              @click="checkExam(props.row)"
             >
             </b-button>
             <b-button
@@ -91,6 +92,7 @@
               icon-left="poll"
               style="margin-left: 10px; height: 25.8px"
               v-if="props.row.isPublished === true"
+              @click="stat(props.row)"
             >
             </b-button>
             <b-button
@@ -120,126 +122,6 @@
             >
               撤下
             </b-button>
-            <b-modal v-model="studentModalActive" has-modal-card>
-              <div class="modal-card" style="width: 1050px; height: 600px">
-                <section class="modal-card-body">
-                  <div style="display: flex; flex: 1; align-items: center">
-                    <b-table
-                      :data="allStudents"
-                      :columns="studentColumns"
-                      :checked-rows.sync="checkedRows"
-                      paginated
-                      sticky-header
-                      height="400px"
-                      per-page="50"
-                      pagination-simple
-                      checkable
-                      checkbox-type="is-info"
-                      checkbox-position="right"
-                      narrowed
-                      striped
-                    >
-                      <template #bottom-left>
-                        <b>已选择：</b> {{ checkedRows.length }}
-                      </template>
-                    </b-table>
-                    <b-button
-                      icon-right="chevron-double-right"
-                      type="is-info is-light"
-                      rounded
-                      style="margin: 20px; font-weight: 500"
-                      @click="selectStudents"
-                      >添加</b-button
-                    >
-                    <header
-                      style="
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: center;
-                      "
-                    >
-                      <header style="font-weight: 700; font-size: large">
-                        {{ currentExam.title }}
-                      </header>
-                      <div style="padding: 10px">
-                        已选择
-                        <span
-                          style="
-                            font-weight: 700;
-                            font-size: large;
-                            color: #007ce8;
-                          "
-                          >{{ studentsToChangeTo.length }} </span
-                        >名考生
-                      </div>
-                      <!--
-                        To update:
-                        Use backend-sorting and backend-pagination props to let those tasks
-                        to the backend, then manage it with page-change and sort events.
-                        See: https://buefy.org/documentation/table#async-data
-                      -->
-                      <b-table
-                        :data="studentsToChangeTo"
-                        narrowed
-                        sticky-header
-                        sort-icon="menu-up"
-                      >
-                        <b-table-column
-                          field="name"
-                          label="姓名"
-                          width="100px"
-                          sortable
-                          centered
-                          v-slot="propsJ"
-                        >
-                          {{ propsJ.row.name }}
-                        </b-table-column>
-                        <b-table-column
-                          field="studentId"
-                          label="学号"
-                          width="70px"
-                          sortable
-                          numeric
-                          v-slot="propsJ"
-                        >
-                          {{ propsJ.row.studentId }}
-                        </b-table-column>
-                        <b-table-column label="移除" v-slot="{ index }">
-                          <b-button
-                            rounded
-                            type="is-danger is-light is-small"
-                            icon-left="close"
-                            style="height: 25.8px"
-                            @click="studentsToChangeTo.splice(index, 1)"
-                          ></b-button>
-                        </b-table-column>
-                      </b-table>
-                      <div
-                        style="display: flex; justify-content: space-between"
-                      >
-                        <b-button
-                          type="is-info"
-                          outlined
-                          icon-left="checkbox-multiple-marked-outline"
-                          :loading="buttonLoading"
-                          size="is-medium"
-                          @click="confirmStudents(currentExam.examId)"
-                        >
-                          <div>更新名单</div></b-button
-                        ><b-button
-                          outlined
-                          :disabled="buttonDisabled"
-                          size="is-medium"
-                          @click="studentModalActive = false"
-                        >
-                          <div>取消</div>
-                        </b-button>
-                      </div>
-                    </header>
-                  </div>
-                </section>
-              </div>
-            </b-modal>
           </b-table-column>
 
           <b-table-column label="复制试题" :centered="true" v-slot="props">
@@ -252,10 +134,208 @@
           </b-table-column>
 
           <template #empty>
-            <div class="has-text-centered">无记录</div>
+            <div v-if="!isLoading" class="has-text-centered">无记录</div>
           </template>
         </b-table>
       </div>
+
+      <b-modal v-model="studentModalActive" has-modal-card>
+        <div class="modal-card" style="width: 1050px; height: 600px">
+          <section class="modal-card-body">
+            <div style="display: flex; flex: 1; align-items: center">
+              <b-table
+                :data="allStudents"
+                :columns="studentColumns"
+                :checked-rows.sync="checkedRows"
+                paginated
+                sticky-header
+                height="400px"
+                per-page="50"
+                pagination-simple
+                checkable
+                checkbox-type="is-info"
+                checkbox-position="right"
+                narrowed
+                striped
+              >
+                <template #bottom-left>
+                  <b>已选择：</b> {{ checkedRows.length }}
+                </template>
+              </b-table>
+              <b-button
+                icon-right="chevron-double-right"
+                type="is-info is-light"
+                rounded
+                style="margin: 20px; font-weight: 500"
+                @click="selectStudents"
+                >添加</b-button
+              >
+              <header
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  justify-content: center;
+                "
+              >
+                <header style="font-weight: 700; font-size: large">
+                  {{ currentExam.title }}
+                </header>
+                <div style="padding: 10px">
+                  已选择
+                  <span
+                    style="font-weight: 700; font-size: large; color: #007ce8"
+                    >{{ studentsToChangeTo.length }} </span
+                  >名考生
+                </div>
+                <b-table
+                  :data="studentsToChangeTo"
+                  narrowed
+                  sticky-header
+                  sort-icon="menu-up"
+                >
+                  <b-table-column
+                    field="name"
+                    label="姓名"
+                    width="100px"
+                    sortable
+                    centered
+                    v-slot="propsJ"
+                  >
+                    {{ propsJ.row.name }}
+                  </b-table-column>
+                  <b-table-column
+                    field="studentId"
+                    label="学号"
+                    width="70px"
+                    sortable
+                    numeric
+                    v-slot="propsJ"
+                  >
+                    {{ propsJ.row.studentId }}
+                  </b-table-column>
+                  <b-table-column label="移除" v-slot="{ index }">
+                    <b-button
+                      rounded
+                      type="is-danger is-light is-small"
+                      icon-left="close"
+                      style="height: 25.8px"
+                      @click="studentsToChangeTo.splice(index, 1)"
+                    ></b-button>
+                  </b-table-column>
+                </b-table>
+                <div style="display: flex; justify-content: space-between">
+                  <b-button
+                    type="is-info"
+                    outlined
+                    icon-left="checkbox-multiple-marked-outline"
+                    :loading="buttonLoading"
+                    size="is-medium"
+                    @click="confirmStudents(currentExam.examId)"
+                  >
+                    <div>更新名单</div></b-button
+                  ><b-button
+                    outlined
+                    :disabled="buttonDisabled"
+                    size="is-medium"
+                    @click="studentModalActive = false"
+                  >
+                    <div>取消</div>
+                  </b-button>
+                </div>
+              </header>
+            </div>
+          </section>
+        </div>
+      </b-modal>
+
+      <b-modal v-model="statModalActive" has-modal-card>
+        <header class="modal-card-head">
+          <p class="modal-card-title">成绩单</p>
+        </header>
+        <div class="modal-card" style="width: auto">
+          <section class="modal-card-body">
+            <b-table
+              :data="studentsToStat"
+              paginated
+              sticky-header
+              per-page="50"
+              narrowed
+              striped
+            >
+              <b-table-column centered v-slot="{ index }">
+                <div style="font-weight: 700">{{ index + 1 }}</div>
+              </b-table-column>
+              <b-table-column
+                field="major"
+                label="专业"
+                width="150"
+                centered
+                searchable
+                sortable
+                v-slot="props"
+              >
+                {{ props.row.major }}
+              </b-table-column>
+
+              <b-table-column
+                field="schoolClass"
+                label="班级"
+                width="100"
+                searchable
+                sortable
+                centered
+                v-slot="props"
+              >
+                {{ props.row.schoolClass }}
+              </b-table-column>
+
+              <b-table-column
+                field="studentId"
+                label="学号"
+                width="100"
+                searchable
+                sortable
+                numeric
+                v-slot="props"
+              >
+                {{ props.row.studentId }}
+              </b-table-column>
+
+              <b-table-column
+                field="name"
+                label="姓名"
+                width="100"
+                centered
+                searchable
+                sortable
+                v-slot="props"
+              >
+                {{ props.row.name }}
+              </b-table-column>
+
+              <b-table-column
+                field="score"
+                label="得分"
+                numeric
+                searchable
+                sortable
+                v-slot="props"
+              >
+                {{ props.row.score }}
+              </b-table-column>
+              <template #empty>
+                <div v-if="!isLoading" class="has-text-centered">
+                  考生名单为空
+                </div>
+              </template>
+            </b-table>
+            <b-loading
+              :is-full-page="false"
+              v-model="isStatLoading"
+            ></b-loading>
+          </section>
+        </div>
+      </b-modal>
 
       <teacher-papers-modify-view
         v-if="mode === 'add'"
@@ -271,6 +351,12 @@
         @backToList="mode = 'list'"
       ></teacher-papers-modify-view>
 
+      <teacher-papers-check-view
+        v-if="mode === 'check'"
+        :exam="examToCheck"
+        @backToList="mode = 'list'"
+      ></teacher-papers-check-view>
+
       <b-loading :active.sync="isLoading"></b-loading>
     </section>
   </div>
@@ -280,8 +366,13 @@
 import axios from "axios";
 import TeacherSidebarView from "../teacher/TeacherSidebarView.vue";
 import TeacherPapersModifyView from "../teacher/TeacherPapersModifyView.vue";
+import TeacherPapersCheckView from "../teacher/TeacherPapersCheckView.vue";
 export default {
-  components: { TeacherSidebarView, TeacherPapersModifyView },
+  components: {
+    TeacherSidebarView,
+    TeacherPapersModifyView,
+    TeacherPapersCheckView,
+  },
   data() {
     return {
       uid: null,
@@ -290,6 +381,7 @@ export default {
 
       data: [],
       isLoading: false,
+      isStatLoading: false,
       buttonLoading: false,
       buttonDisabled: false,
       currentExam: {
@@ -319,11 +411,15 @@ export default {
         isPublished: false,
       },
 
+      examToCheck: null,
+
       studentModalActive: false,
+      statModalActive: false,
       allStudents: [],
       initialUids: [],
       studentsToChangeTo: [],
       checkedRows: [],
+      studentsToStat: [],
       studentColumns: [
         {
           field: "major",
@@ -354,12 +450,73 @@ export default {
           searchable: true,
         },
       ],
+      timeDiff: new Date().getTimezoneOffset() * 60000,
     };
   },
   methods: {
+    stat(row) {
+      let students = [];
+      this.statModalActive = true;
+      this.isStatLoading = true;
+      axios
+        .get("/api/student-exams/" + row.examId)
+        .then(async (response) => {
+          students = response.data.data;
+          for (let i of students) {
+            await axios
+              .get("/api/student-exams", {
+                params: { studentUid: i.uid, examId: row.examId },
+              })
+              .then(async (presenceRes) => {
+                let presence = presenceRes.data.data[0].presence;
+                if (!presence) i.score = "缺席";
+                else
+                  await axios
+                    .get("/api/student-exam-questions/sum-score", {
+                      params: { studentUid: i.uid, examId: row.examId },
+                    })
+                    .then((result) => {
+                      i.score = result.data.data ? result.data.data : 0;
+                    });
+              });
+          }
+          this.isStatLoading = false;
+          this.studentsToStat = students;
+        })
+        .catch((error) => {
+          this.isStatLoading = false;
+          this.$buefy.notification.open({
+            message: "网络异常：" + error,
+            type: "is-danger",
+            pauseOnHover: true,
+          });
+          return;
+        });
+    },
+    addExam() {
+      this.mode = "add";
+    },
     editExam(row) {
       this.mode = "edit";
       this.examToEdit = row;
+    },
+    checkExam(row) {
+      var formatDateTime = function (date) {
+        var y = date.getFullYear();
+        var m = date.getMonth() + 1;
+        var d = date.getDate();
+        var h = date.getHours();
+        var minute = date.getMinutes();
+        m = m < 10 ? "0" + m : m;
+        d = d < 10 ? "0" + d : d;
+        h = h < 10 ? "0" + h : h;
+        minute = minute < 10 ? "0" + minute : minute;
+        return y + "-" + m + "-" + d + "　" + h + ":" + minute;
+      };
+      row.startTimeFormatted = formatDateTime(row.startTime);
+      row.endTimeFormatted = formatDateTime(row.endTime);
+      this.examToCheck = row;
+      this.mode = "check";
     },
     togglePublish(row, changeTo) {
       if (
@@ -385,12 +542,15 @@ export default {
                   message:
                     "试卷已公开<br>您可以在「所有考试」中查看所有公开的试卷",
                   type: "is-success",
-                  position: "is-bottom",
+                  position: "is-top-right",
+                  pauseOnHover: true,
                 }
               : {
-                  message: "已设置为非公开，考生名单及作答信息保留",
+                  message:
+                    "已设置为非公开，考生名单及作答信息保留<br>成绩单只在考生提交答案时更新",
                   type: "is-warning",
-                  position: "is-bottom",
+                  position: "is-top-right",
+                  pauseOnHover: true,
                 }
           );
         })
@@ -525,6 +685,7 @@ export default {
       this.isLoading = false;
     },
     selectStudents() {
+      let addedStudents = [];
       for (let i of this.checkedRows) {
         let found = false;
         for (let j of this.studentsToChangeTo) {
@@ -534,9 +695,10 @@ export default {
           }
         }
         if (!found) {
-          this.studentsToChangeTo.unshift(i);
+          addedStudents.push(i);
         }
       }
+      this.studentsToChangeTo = addedStudents.concat(this.studentsToChangeTo);
       this.checkedRows = [];
     },
     confirmStudents(examId) {
@@ -643,8 +805,12 @@ export default {
       .then((result) => {
         this.isLoading = false;
         for (let i of result.data.data) {
-          if (i.startTime) i.startTime = new Date(i.startTime);
-          if (i.endTime) i.endTime = new Date(i.endTime);
+          if (i.startTime)
+            i.startTime = new Date(
+              new Date(i.startTime).getTime() - this.timeDiff
+            );
+          if (i.endTime)
+            i.endTime = new Date(new Date(i.endTime) - this.timeDiff);
           this.data.push(i);
         }
       })

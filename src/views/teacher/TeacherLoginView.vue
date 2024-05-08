@@ -108,13 +108,14 @@ export default {
             this.$buefy.notification.open({
               message: result.msg,
               type: "is-danger",
+              position: "is-top",
             });
           }
         })
         .catch((error) => {
           this.isLoading = false;
           this.$buefy.notification.open({
-            message: "网路异常：" + error,
+            message: "网络异常：" + error,
             type: "is-danger",
           });
         });

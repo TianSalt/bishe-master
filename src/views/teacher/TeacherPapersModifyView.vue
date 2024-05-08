@@ -32,7 +32,7 @@
       <section>
         <b-table :data="questionsInExam">
           <b-table-column label="题号" centered v-slot="{ index }">
-            <div style="font-size: larger">{{ index + 1 }}</div>
+            <div style="font-size: 24px">{{ index + 1 }}</div>
           </b-table-column>
 
           <b-table-column label="题型" centered v-slot="props">
@@ -190,7 +190,7 @@
                 </b-button>
               </b-table-column>
               <template #empty>
-                <div class="has-text-centered">
+                <div v-if="!isLoading" class="has-text-centered">
                   题库中没有任何题目，请前往贡献题目
                 </div>
               </template>
