@@ -115,8 +115,9 @@ export default {
         .catch((error) => {
           this.isLoading = false;
           this.$buefy.notification.open({
-            message: "网络异常：" + error,
+            message: "服务器异常：" + error,
             type: "is-danger",
+            position: "is-top",
           });
         });
     },
@@ -145,12 +146,20 @@ export default {
       this.isLoading = true;
       axios
         .post("/api/teachers", teacherHashed)
-        .then(() => {
+        .then((result) => {
           this.isLoading = false;
-          this.$buefy.notification.open({
-            message: "注册成功！",
-            type: "is-success",
-          });
+          if (result.data.code === 1) {
+            this.$buefy.notification.open({
+              message: "教师已成功注册",
+              type: "is-success",
+            });
+          } else {
+            this.$buefy.notification.open({
+              message: result.data.msg,
+              type: "is-danger",
+            });
+            return;
+          }
           this.toggleMode();
         })
         .catch((error) => {

@@ -7,23 +7,24 @@
             <img src="@/images/smalllogo.png" alt="上机考试" />
           </b-navbar-item>
         </template>
-        <template #start>
+        <template #start
+          ><b-navbar-item>
+            {{ clock }}
+          </b-navbar-item>
           <b-navbar-item>
-            <span style="color: #755dd3; font-size: larger">{{ myName }}</span
-            >&nbsp;（{{ mySid }}）同学，欢迎使用大学生上机考试系统
+            <span style="color: #755dd3; font-size: larger">{{ info.name }}</span
+            >&nbsp;（{{ info.studentId }}）同学，欢迎使用大学生上机考试系统
           </b-navbar-item>
         </template>
 
         <template #end>
           <b-navbar-item tag="div">
-            <b-button icon-right="logout" class="is-light" @click="logOut()"
-              >退出登录</b-button
-            >
+            <b-button icon-right="logout" class="is-light" @click="logOut()">退出登录</b-button>
           </b-navbar-item>
         </template>
       </b-navbar>
       <div style="margin-left: 50px; margin-right: 50px">
-        <b-table class="table" :data="exams" striped card-layout>
+        <b-table class="table" :data="exams" card-layout>
           <b-table-column
             label="标题"
             field="title"
@@ -54,24 +55,15 @@
             {{ props.row.endTimeFormatted }}
           </b-table-column>
 
-          <b-table-column
-            label="状态"
-            :centered="true"
-            field="status"
-            v-slot="props"
-          >
+          <b-table-column label="状态" :centered="true" field="status" v-slot="props">
             <span :style="{ color: statusColor(props.row.status) }">
               {{ statusText(props.row.status) }}
             </span>
           </b-table-column>
 
-          <b-table-column
-            label="操作"
-            :centered="true"
-            field="status"
-            v-slot="props"
-          >
+          <b-table-column label="操作" :centered="true" field="status" v-slot="props">
             <div>
+              <b-button v-if="props.row.status === 0" type="is-primary" disabled>等待开始</b-button>
               <b-button
                 v-if="props.row.status === 1"
                 type="is-success"
@@ -79,7 +71,7 @@
                 >进入考试</b-button
               >
               <b-button
-                v-else-if="props.row.status !== 0"
+                v-else-if="props.row.status === 2"
                 type="is-info"
                 @click="go(props.row, 'check')"
                 >查看试题</b-button
@@ -91,6 +83,15 @@
             <div v-if="!isLoading" class="has-text-centered">无记录</div>
           </template>
         </b-table>
+
+        <h6 class="title is-6">你的信息</h6>
+        <div class="block">
+          <div><b>专业：</b>{{ info.major }}</div>
+          <div><b>班级：</b>{{ info.schoolClass }}</div>
+          <div><b>学号：</b>{{ info.studentId }}</div>
+          <div><b>姓名：</b>{{ info.name }}</div>
+        </div>
+        <div class="block">如个人信息有误，请联系系统管理员修改</div>
       </div>
     </div>
 
@@ -113,17 +114,18 @@ export default {
   data() {
     return {
       uid: null,
-      myName: "",
-      mySid: "",
+      info: {},
 
       mode: "list",
       exams: [],
       studentExam: [],
       isLoading: false,
       timeDiff: new Date().getTimezoneOffset() * 60000,
+      interval: null,
 
       exam: {},
       disabled: true,
+      clock: null,
     };
   },
   methods: {
@@ -170,13 +172,12 @@ export default {
     axios
       .get("/api/students/" + this.uid)
       .then((response) => {
-        this.myName = response.data.data.name;
-        this.mySid = response.data.data.studentId;
+        this.info = response.data.data;
       })
       .catch((error) => {
         this.isLoading = false;
         this.$buefy.notification.open({
-          message: "网络异常：" + error,
+          message: "服务器异常：" + error,
           type: "is-danger",
         });
         return;
@@ -199,10 +200,8 @@ export default {
       .then((result) => {
         var exams = result.data.data;
         for (let i of exams) {
-          console.log(i.startTime);
-          var startTime = new Date(
-            new Date(i.startTime).getTime() - this.timeDiff
-          );
+          // console.log(i.startTime);
+          var startTime = new Date(new Date(i.startTime).getTime() - this.timeDiff);
           var endTime = new Date(new Date(i.endTime) - this.timeDiff);
           let status = 3;
           if (startTime < endTime) {
@@ -226,10 +225,27 @@ export default {
       .catch((error) => {
         this.isLoading = false;
         this.$buefy.notification.open({
-          message: "网络异常：" + error,
+          message: "服务器异常：" + error,
           type: "is-danger",
         });
       });
+    this.clock = formatDateTime(new Date());
+    this.interval = setInterval(() => {
+      let clock = new Date();
+      this.clock = formatDateTime(clock);
+      for (let i of this.exams) {
+        if (i.startTime < i.endTime) {
+          if (i.startTime > clock) i.status = 0;
+          else if (i.endTime > clock) i.status = 1;
+          else i.status = 2;
+        } else {
+          i.status = 3;
+        }
+      }
+    }, 1000);
+  },
+  beforeDestroy() {
+    clearInterval(this.interval);
   },
 };
 </script>

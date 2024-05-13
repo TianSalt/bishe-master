@@ -5,6 +5,8 @@ import AdminTeachersView from "@/views/admin/AdminTeachersView.vue";
 import SandboxView from "@/views/sandbox/SandboxView.vue";
 import TeacherErrorView from "@/views/teacher/TeacherErrorView.vue";
 import StudentErrorView from "@/views/student/StudentErrorView.vue";
+import AdminErrorView from "@/views/admin/AdminErrorView.vue";
+import AdminLoginView from "@/views/admin/AdminLoginView.vue";
 import TeacherLoginView from "@/views/teacher/TeacherLoginView.vue";
 import StudentLoginView from "@/views/student/StudentLoginView.vue";
 import TeacherView from "@/views/teacher/TeacherExamsView.vue";
@@ -35,6 +37,16 @@ const routes = [
     path: "/admin",
     name: "Admin",
     component: AdminTeachersView,
+  },
+  {
+    path: "/admin/login",
+    name: "AdminLogin",
+    component: AdminLoginView,
+  },
+  {
+    path: "/admin/error",
+    name: "AdminError",
+    component: AdminErrorView,
   },
   {
     path: "/admin/students",
@@ -121,7 +133,7 @@ router.beforeEach(async (to, from, next) => {
         if (response.data.code === 0) return next("/teacher/error");
       })
       .catch((error) => {
-        alert("网络异常：" + error);
+        alert("服务器异常：" + error);
       });
     next();
   } else if (to.path.startsWith("/student/") || to.path === "/student") {
@@ -137,7 +149,23 @@ router.beforeEach(async (to, from, next) => {
         if (response.data.code === 0) return next("/student/error");
       })
       .catch((error) => {
-        alert("网络异常：" + error);
+        alert("服务器异常：" + error);
+      });
+    next();
+  } else if (to.path.startsWith("/admin/") || to.path === "/admin") {
+    if (to.path === "/admin/login" || to.path === "/admin/error")
+      return next();
+    let user = JSON.parse(localStorage.getItem("access-admin"));
+    if (!user) {
+      return next("/admin/login");
+    }
+    await axios
+      .get("/api/check-token", { params: { token: user.token } })
+      .then((response) => {
+        if (response.data.code === 0) return next("/admin/error");
+      })
+      .catch((error) => {
+        alert("服务器异常：" + error);
       });
     next();
   } else next();

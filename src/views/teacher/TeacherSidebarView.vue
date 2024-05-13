@@ -90,7 +90,7 @@ export default {
       .catch((error) => {
         this.isLoading = false;
         this.$buefy.notification.open({
-          message: "网络异常：" + error,
+          message: "服务器异常：" + error,
           type: "is-danger",
         });
         return;

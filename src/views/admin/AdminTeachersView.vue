@@ -7,6 +7,7 @@
         :can-cancel="false"
         position="static"
         open
+        type="is-warning"
       >
         <div class="p-1">
           <div class="block">
@@ -26,9 +27,6 @@
                   label="教师管理"
                 ></b-menu-item
               ></router-link>
-              <router-link to="/admin/questions"
-                ><b-menu-item label="题库" icon="bookshelf"></b-menu-item
-              ></router-link>
             </b-menu-list>
             <b-menu-list label="管理员信息"
               ><router-link to="/admin/personal"
@@ -38,10 +36,7 @@
             </b-menu-list>
             <b-menu-list label="大学生上机考试系统"
               ><router-link to="/admin/about"
-                ><b-menu-item
-                  icon="information-outline"
-                  label="关于"
-                ></b-menu-item
+                ><b-menu-item icon="information-outline" label="关于"></b-menu-item
               ></router-link>
             </b-menu-list>
           </b-menu>
@@ -59,11 +54,7 @@
             }}</span>
             名教师
           </div>
-          <b-button
-            type="is-primary"
-            icon-left="account-plus"
-            outlined
-            @click="isAddModalActive = true"
+          <b-button type="is-primary" icon-left="account-plus" @click="isAddModalActive = true"
             >添加教师</b-button
           >
           <b-modal
@@ -82,25 +73,15 @@
                   <p class="modal-card-title">教师注册</p>
                 </header>
                 <section class="modal-card-body">
-                  <b-field
-                    label="姓名"
-                    :type="addField.name.type"
-                    :message="addField.name.message"
-                  >
-                    <b-input v-model="teacher.name" maxlength="255" required>
-                    </b-input>
+                  <b-field label="姓名" :type="addField.name.type" :message="addField.name.message">
+                    <b-input v-model="teacher.name" maxlength="255" required> </b-input>
                   </b-field>
                   <b-field
                     label="工号"
                     :type="addField.employeeId.type"
                     :message="addField.employeeId.message"
                   >
-                    <b-input
-                      v-model="teacher.employeeId"
-                      maxlength="255"
-                      required
-                    >
-                    </b-input>
+                    <b-input v-model="teacher.employeeId" maxlength="255" required> </b-input>
                   </b-field>
 
                   <b-field
@@ -162,7 +143,7 @@
           <b-table-column v-slot="props">
             <b-button
               class="button is-info is-light is-small"
-              style="height: 25.8px"
+              style="height: 24px"
               icon-right="pencil"
               @click="modifyClicked(props.row)"
             />
@@ -187,23 +168,14 @@
                       :type="modifyField.name.type"
                       :message="modifyField.name.message"
                     >
-                      <b-input
-                        v-model="teacherModify.name"
-                        maxlength="255"
-                        required
-                      >
-                      </b-input>
+                      <b-input v-model="teacherModify.name" maxlength="255" required> </b-input>
                     </b-field>
                     <b-field
                       label="工号"
                       :type="modifyField.employeeId.type"
                       :message="modifyField.employeeId.message"
                     >
-                      <b-input
-                        v-model="teacherModify.employeeId"
-                        maxlength="255"
-                        required
-                      >
+                      <b-input v-model="teacherModify.employeeId" maxlength="255" required>
                       </b-input>
                     </b-field>
                     <b-field
@@ -236,7 +208,7 @@
           <b-table-column v-slot="props">
             <b-button
               class="button is-danger is-light is-small"
-              style="height: 25.8px"
+              style="height: 24px"
               icon-right="trash-can-outline"
               @click="deleteRow(props.row)"
             />
@@ -248,11 +220,7 @@
         </b-table>
       </div>
 
-      <b-loading
-        :active.sync="isLoading"
-        :can-cancel="false"
-        position="static"
-      ></b-loading>
+      <b-loading :active.sync="isLoading" :can-cancel="false" position="static"></b-loading>
     </section>
   </div>
 </template>
@@ -467,7 +435,7 @@ export default {
             .catch((error) => {
               this.isLoading = false;
               this.$buefy.notification.open({
-                message: "网络异常：" + error,
+                message: "服务器异常：" + error,
                 type: "is-danger",
               });
             });
@@ -502,7 +470,7 @@ export default {
       .catch((error) => {
         this.isLoading = false;
         this.$buefy.notification.open({
-          message: "网络异常：" + error,
+          message: "服务器异常：" + error,
           type: "is-danger",
         });
       });

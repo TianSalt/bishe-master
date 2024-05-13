@@ -4,12 +4,7 @@
       <teacher-sidebar-view :uid="uid"></teacher-sidebar-view>
 
       <div
-        style="
-          margin-left: 30px;
-          margin-right: 30px;
-          margin-top: 10px;
-          width: 100%;
-        "
+        style="margin-left: 30px; margin-right: 30px; margin-top: 10px; width: 100%"
         v-if="mode === 'list'"
       >
         <div style="display: flex; justify-content: space-between">
@@ -20,11 +15,7 @@
             }}</span>
             份试卷
           </div>
-          <b-button
-            type="is-primary"
-            icon-left="note-plus-outline"
-            outlined
-            @click="addExam"
+          <b-button type="is-primary" icon-left="note-plus-outline" outlined @click="addExam"
             >新建试卷</b-button
           >
         </div>
@@ -63,7 +54,7 @@
               class="button is-danger"
               outlined
               icon-left="trash-can-outline"
-              style="height: 25.8px"
+              style="height: 24px"
               v-if="props.row.isPublished !== true"
               @click="deleteExam(props.row)"
             >
@@ -72,7 +63,7 @@
               class="button is-info"
               outlined
               icon-left="pencil"
-              style="margin-left: 10px; height: 25.8px"
+              style="margin-left: 10px; height: 24px"
               v-if="props.row.isPublished === false"
               @click="editExam(props.row)"
             >
@@ -81,7 +72,7 @@
               class="button is-info"
               outlined
               icon-left="magnify"
-              style="margin-left: 10px; height: 25.8px"
+              style="margin-left: 10px; height: 24px"
               v-if="props.row.isPublished === true"
               @click="checkExam(props.row)"
             >
@@ -90,7 +81,7 @@
               class="button is-primary"
               outlined
               icon-left="poll"
-              style="margin-left: 10px; height: 25.8px"
+              style="margin-left: 10px; height: 24px"
               v-if="props.row.isPublished === true"
               @click="stat(props.row)"
             >
@@ -98,7 +89,7 @@
             <b-button
               class="button is-info"
               icon-left="account-group"
-              style="margin-left: 10px; height: 25.8px"
+              style="margin-left: 10px; height: 24px"
               v-if="props.row.isPublished === true"
               @click="setStudents(props.row)"
             >
@@ -107,7 +98,7 @@
             <b-button
               class="button is-success"
               icon-left="eye"
-              style="margin-left: 10px; height: 25.8px"
+              style="margin-left: 10px; height: 24px"
               v-if="props.row.isPublished === false"
               @click="togglePublish(props.row, true)"
             >
@@ -116,7 +107,7 @@
             <b-button
               class="button is-warning"
               icon-left="eye-off"
-              style="margin-left: 10px; height: 25.8px"
+              style="margin-left: 10px; height: 24px"
               v-if="props.row.isPublished === true"
               @click="togglePublish(props.row, false)"
             >
@@ -127,7 +118,7 @@
           <b-table-column label="复制试题" :centered="true" v-slot="props">
             <b-button
               icon-left="content-copy"
-              style="margin-left: 10px; height: 25.8px"
+              style="margin-left: 10px; height: 24px"
               @click="copyExam(props.row)"
             >
             </b-button>
@@ -139,7 +130,7 @@
         </b-table>
       </div>
 
-      <b-modal v-model="studentModalActive" has-modal-card>
+      <b-modal v-model="studentModalActive" has-modal-card @close="checkedRows = []">
         <div class="modal-card" style="width: 1050px; height: 600px">
           <section class="modal-card-body">
             <div style="display: flex; flex: 1; align-items: center">
@@ -158,9 +149,7 @@
                 narrowed
                 striped
               >
-                <template #bottom-left>
-                  <b>已选择：</b> {{ checkedRows.length }}
-                </template>
+                <template #bottom-left> <b>已选择：</b> {{ checkedRows.length }} </template>
               </b-table>
               <b-button
                 icon-right="chevron-double-right"
@@ -170,29 +159,17 @@
                 @click="selectStudents"
                 >添加</b-button
               >
-              <header
-                style="
-                  display: flex;
-                  flex-direction: column;
-                  justify-content: center;
-                "
-              >
+              <header style="display: flex; flex-direction: column; justify-content: center">
                 <header style="font-weight: 700; font-size: large">
                   {{ currentExam.title }}
                 </header>
                 <div style="padding: 10px">
                   已选择
-                  <span
-                    style="font-weight: 700; font-size: large; color: #007ce8"
+                  <span style="font-weight: 700; font-size: large; color: #007ce8"
                     >{{ studentsToChangeTo.length }} </span
                   >名考生
                 </div>
-                <b-table
-                  :data="studentsToChangeTo"
-                  narrowed
-                  sticky-header
-                  sort-icon="menu-up"
-                >
+                <b-table :data="studentsToChangeTo" narrowed sticky-header sort-icon="menu-up">
                   <b-table-column
                     field="name"
                     label="姓名"
@@ -218,10 +195,13 @@
                       rounded
                       type="is-danger is-light is-small"
                       icon-left="close"
-                      style="height: 25.8px"
+                      style="height: 24px"
                       @click="studentsToChangeTo.splice(index, 1)"
                     ></b-button>
                   </b-table-column>
+                  <template #empty>
+                    <div class="has-text-centered">从左侧学生名单中选取考生</div>
+                  </template>
                 </b-table>
                 <div style="display: flex; justify-content: space-between">
                   <b-button
@@ -251,17 +231,11 @@
       <b-modal v-model="statModalActive" has-modal-card>
         <header class="modal-card-head">
           <p class="modal-card-title">成绩单</p>
+          <b-button type="is-primary" icon-left="download" @click="exportCSV()">下载 CSV</b-button>
         </header>
         <div class="modal-card" style="width: auto">
           <section class="modal-card-body">
-            <b-table
-              :data="studentsToStat"
-              paginated
-              sticky-header
-              per-page="50"
-              narrowed
-              striped
-            >
+            <b-table :data="studentsToStat" paginated sticky-header per-page="50" narrowed striped>
               <b-table-column centered v-slot="{ index }">
                 <div style="font-weight: 700">{{ index + 1 }}</div>
               </b-table-column>
@@ -315,7 +289,7 @@
 
               <b-table-column
                 field="score"
-                label="得分"
+                :label="totalScore"
                 numeric
                 searchable
                 sortable
@@ -324,15 +298,10 @@
                 {{ props.row.score }}
               </b-table-column>
               <template #empty>
-                <div v-if="!isLoading" class="has-text-centered">
-                  考生名单为空
-                </div>
+                <div v-if="!isLoading" class="has-text-centered">考生名单为空</div>
               </template>
             </b-table>
-            <b-loading
-              :is-full-page="false"
-              v-model="isStatLoading"
-            ></b-loading>
+            <b-loading :is-full-page="false" v-model="isStatLoading"></b-loading>
           </section>
         </div>
       </b-modal>
@@ -420,6 +389,7 @@ export default {
       studentsToChangeTo: [],
       checkedRows: [],
       studentsToStat: [],
+      totalScore: "得分（满分：）",
       studentColumns: [
         {
           field: "major",
@@ -455,38 +425,48 @@ export default {
   },
   methods: {
     stat(row) {
+      this.studentsToStat = [];
+      this.totalScore = "得分（满分：）";
       let students = [];
       this.statModalActive = true;
       this.isStatLoading = true;
       axios
-        .get("/api/student-exams/" + row.examId)
-        .then(async (response) => {
-          students = response.data.data;
-          for (let i of students) {
-            await axios
-              .get("/api/student-exams", {
-                params: { studentUid: i.uid, examId: row.examId },
-              })
-              .then(async (presenceRes) => {
-                let presence = presenceRes.data.data[0].presence;
-                if (!presence) i.score = "缺席";
-                else
-                  await axios
-                    .get("/api/student-exam-questions/sum-score", {
-                      params: { studentUid: i.uid, examId: row.examId },
-                    })
-                    .then((result) => {
-                      i.score = result.data.data ? result.data.data : 0;
-                    });
-              });
-          }
-          this.isStatLoading = false;
-          this.studentsToStat = students;
+        .get("/api/exam-questions/list", { params: { examId: row.examId } })
+        .then((list) => {
+          this.totalScore =
+            "得分（满分：" +
+            list.data.data.reduce(function (acc, current) {
+              return acc + current.score;
+            }, 0) +
+            "）";
+          axios.get("/api/student-exams/" + row.examId).then(async (response) => {
+            students = response.data.data;
+            for (let i of students) {
+              await axios
+                .get("/api/student-exams", {
+                  params: { studentUid: i.uid, examId: row.examId },
+                })
+                .then(async (presenceRes) => {
+                  let presence = presenceRes.data.data[0].presence;
+                  if (!presence) i.score = "缺席";
+                  else
+                    await axios
+                      .get("/api/student-exam-questions/sum-score", {
+                        params: { studentUid: i.uid, examId: row.examId },
+                      })
+                      .then((result) => {
+                        i.score = result.data.data ? result.data.data : 0;
+                      });
+                });
+            }
+            this.isStatLoading = false;
+            this.studentsToStat = students;
+          });
         })
         .catch((error) => {
           this.isStatLoading = false;
           this.$buefy.notification.open({
-            message: "网络异常：" + error,
+            message: "服务器异常：" + error,
             type: "is-danger",
             pauseOnHover: true,
           });
@@ -519,10 +499,7 @@ export default {
       this.mode = "check";
     },
     togglePublish(row, changeTo) {
-      if (
-        changeTo === true &&
-        (row.startTime === null || row.endTime === null)
-      ) {
+      if (changeTo === true && (row.startTime === null || row.endTime === null)) {
         this.$buefy.dialog.alert({
           hasIcon: true,
           message: "设置了起止时间才能发布考试",
@@ -536,21 +513,18 @@ export default {
         .put("/api/exams", row)
         .then(() => {
           this.isLoading = false;
-          this.$buefy.notification.open(
+          this.$buefy.dialog.alert(
             changeTo
               ? {
-                  message:
-                    "试卷已公开<br>您可以在「所有考试」中查看所有公开的试卷",
+                  title: "试卷已公开",
+                  message: "您可以在「所有考试」中查看所有公开的试卷",
                   type: "is-success",
-                  position: "is-top-right",
-                  pauseOnHover: true,
                 }
               : {
+                  title: "已设置为非公开",
                   message:
-                    "已设置为非公开，考生名单及作答信息保留<br>成绩单只在考生提交答案时更新",
+                    "考生名单及作答信息保留；更改题目分值后，考生需要再次提交答案才能更新成绩",
                   type: "is-warning",
-                  position: "is-top-right",
-                  pauseOnHover: true,
                 }
           );
         })
@@ -558,7 +532,7 @@ export default {
           this.isLoading = false;
           row.isPublished = !row.isPublished;
           this.$buefy.notification.open({
-            message: "网络异常：" + error,
+            message: "服务器异常：" + error,
             type: "is-danger",
           });
         });
@@ -589,7 +563,7 @@ export default {
             .catch((error) => {
               this.isLoading = false;
               this.$buefy.notification.open({
-                message: "网络异常：" + error,
+                message: "服务器异常：" + error,
                 type: "is-danger",
               });
             });
@@ -634,15 +608,15 @@ export default {
         .catch((error) => {
           this.isLoading = false;
           this.$buefy.notification.open({
-            message: "网络异常：" + error,
+            message: "服务器异常：" + error,
             type: "is-danger",
             pauseOnHover: true,
           });
           return;
         });
     },
-    loadAllStudents() {
-      axios
+    async loadAllStudents() {
+      await axios
         .get("/api/students")
         .then((response) => {
           this.allStudents = response.data.data;
@@ -650,38 +624,36 @@ export default {
         .catch((error) => {
           this.isLoading = false;
           this.$buefy.notification.open({
-            message: "网络异常：" + error,
+            message: "服务器异常：" + error,
             type: "is-danger",
             pauseOnHover: true,
           });
           return;
         });
     },
-    loadStudentsOfExam(examId) {
-      axios
+    async loadStudentsOfExam(examId) {
+      await axios
         .get("/api/student-exams/" + examId)
         .then((response) => {
           this.studentsToChangeTo = response.data.data;
-          this.initialUids = Array.from(this.studentsToChangeTo).map(
-            (obj) => obj.uid
-          );
+          this.initialUids = Array.from(this.studentsToChangeTo).map((obj) => obj.uid);
         })
         .catch((error) => {
           this.isLoading = false;
           this.$buefy.notification.open({
-            message: "网络异常：" + error,
+            message: "服务器异常：" + error,
             type: "is-danger",
             pauseOnHover: true,
           });
           return;
         });
     },
-    setStudents(exam) {
+    async setStudents(exam) {
       this.isLoading = true;
       this.currentExam = exam;
       this.studentModalActive = true;
-      if (this.allStudents.length === 0) this.loadAllStudents();
-      this.loadStudentsOfExam(exam.examId);
+      await this.loadStudentsOfExam(exam.examId);
+      if (this.allStudents.length === 0) await this.loadAllStudents();
       this.isLoading = false;
     },
     selectStudents() {
@@ -705,15 +677,12 @@ export default {
       this.$buefy.dialog.confirm({
         title: "更新考生名单",
         hasIcon: true,
-        message:
-          "确定更新考生名单吗？<br>如果移除了原有的考生，其作答将被删除！",
+        message: "确定更新考生名单吗？<br>如果移除了原有的考生，其作答将被删除！",
         type: "is-warning",
         onConfirm: async () => {
           this.buttonLoading = true;
           this.buttonDisabled = true;
-          let uidsToChangeTo = Array.from(this.studentsToChangeTo).map(
-            (obj) => obj.uid
-          );
+          let uidsToChangeTo = Array.from(this.studentsToChangeTo).map((obj) => obj.uid);
           let asyncOperations = [];
           let success = true;
           for (let i of this.initialUids) {
@@ -729,7 +698,7 @@ export default {
                     this.buttonLoading = false;
                     this.buttonDisabled = false;
                     this.$buefy.notification.open({
-                      message: "网络异常：" + error,
+                      message: "服务器异常：" + error,
                       type: "is-danger",
                       pauseOnHover: true,
                     });
@@ -741,18 +710,16 @@ export default {
             if (!success) break;
             if (!this.initialUids.includes(i)) {
               asyncOperations.push(
-                axios
-                  .post("/api/student-exams", { examId, studentUid: i })
-                  .catch((error) => {
-                    success = false;
-                    this.buttonLoading = false;
-                    this.buttonDisabled = false;
-                    this.$buefy.notification.open({
-                      message: "网络异常：" + error,
-                      type: "is-danger",
-                      pauseOnHover: true,
-                    });
-                  })
+                axios.post("/api/student-exams", { examId, studentUid: i }).catch((error) => {
+                  success = false;
+                  this.buttonLoading = false;
+                  this.buttonDisabled = false;
+                  this.$buefy.notification.open({
+                    message: "服务器异常：" + error,
+                    type: "is-danger",
+                    pauseOnHover: true,
+                  });
+                })
               );
             }
           }
@@ -792,6 +759,38 @@ export default {
           return "#f04668";
       }
     },
+    exportCSV() {
+      const selectedColumns = ["major", "schoolClass", "studentId", "name", "score"];
+      const csvContent =
+        "data:text/csv;charset=utf-8," +
+        selectedColumns.map(this.renameColumn).join(",") +
+        "\n" +
+        this.studentsToStat
+          .map((student) => selectedColumns.map((col) => student[col]).join(","))
+          .join("\n");
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "成绩单.csv");
+      document.body.appendChild(link);
+      link.click();
+    },
+    renameColumn(key) {
+      switch (key) {
+        case "major":
+          return "专业";
+        case "schoolClass":
+          return "班级";
+        case "studentId":
+          return "学号";
+        case "name":
+          return "姓名";
+        case "score":
+          return "得分";
+        default:
+          return key;
+      }
+    },
   },
   created() {
     this.isLoading = true;
@@ -805,19 +804,15 @@ export default {
       .then((result) => {
         this.isLoading = false;
         for (let i of result.data.data) {
-          if (i.startTime)
-            i.startTime = new Date(
-              new Date(i.startTime).getTime() - this.timeDiff
-            );
-          if (i.endTime)
-            i.endTime = new Date(new Date(i.endTime) - this.timeDiff);
+          if (i.startTime) i.startTime = new Date(new Date(i.startTime).getTime() - this.timeDiff);
+          if (i.endTime) i.endTime = new Date(new Date(i.endTime) - this.timeDiff);
           this.data.push(i);
         }
       })
       .catch((error) => {
         this.isLoading = false;
         this.$buefy.notification.open({
-          message: "网络异常：" + error,
+          message: "服务器异常：" + error,
           type: "is-danger",
           pauseOnHover: true,
         });

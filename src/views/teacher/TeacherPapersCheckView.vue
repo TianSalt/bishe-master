@@ -70,8 +70,8 @@
                   width: 150px;
                   display: inline-block;
                   vertical-align: middle;
-                  margin-left: 10px;
-                  margin-right: 10px;
+                  margin-left: 5px;
+                  margin-right: 5px;
                 "
                 :disabled="localDisabled"
                 v-model="question.answer"
@@ -132,7 +132,7 @@ export default {
       .catch((error) => {
         this.isLoading = false;
         this.$buefy.notification.open({
-          message: "网络异常：" + error,
+          message: "服务器异常：" + error,
           type: "is-danger",
         });
         return;

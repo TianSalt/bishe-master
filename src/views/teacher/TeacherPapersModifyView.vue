@@ -67,7 +67,12 @@
               rounded
               type="is-danger is-light"
               icon-left="close"
-              @click="questionsInExam.splice(index, 1)"
+              @click="
+                questionsInExam.splice(index, 1);
+                totalScore = questionsInExam.reduce(function (acc, current) {
+                  return acc + current.score;
+                }, 0);
+              "
             ></b-button>
           </b-table-column>
           <b-table-column v-slot="{ index }" label="移动" centered>
@@ -185,7 +190,7 @@
                     questionsInExam.push(temp);
                     addModalActive = false;
                   "
-                  style="margin-right: 10px; height: 25.8px"
+                  style="margin-right: 10px; height: 24.0px"
                 >
                 </b-button>
               </b-table-column>
@@ -245,7 +250,7 @@ export default {
         .catch((error) => {
           this.isLoading = false;
           this.$buefy.notification.open({
-            message: "网络异常：" + error,
+            message: "服务器异常：" + error,
             type: "is-danger",
             pauseOnHover: true,
           });
@@ -278,6 +283,7 @@ export default {
         this.localExam.startTime > this.localExam.endTime
       ) {
         this.$buefy.dialog.alert({
+          title: "您的考试出师未捷身先死",
           message: "考试结束时间早于开始时间",
           type: "is-danger",
         });
@@ -333,6 +339,7 @@ export default {
         this.localExam.startTime > this.localExam.endTime
       ) {
         this.$buefy.dialog.alert({
+          title: "您的考试出师未捷身先死",
           message: "考试结束时间早于开始时间",
           type: "is-danger",
         });
@@ -443,7 +450,7 @@ export default {
         .catch((error) => {
           this.isLoading = false;
           this.$buefy.notification.open({
-            message: "网络异常：" + error,
+            message: "服务器异常：" + error,
             type: "is-danger",
             pauseOnHover: true,
           });

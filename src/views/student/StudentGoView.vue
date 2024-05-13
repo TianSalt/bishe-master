@@ -100,8 +100,8 @@
                   width: 150px;
                   display: inline-block;
                   vertical-align: middle;
-                  margin-left: 10px;
-                  margin-right: 10px;
+                  margin-left: 5px;
+                  margin-right: 5px;
                 "
                 :disabled="localDisabled"
                 v-model="question.answer"
@@ -155,7 +155,7 @@ export default {
         .catch((error) => {
           this.isLoading = false;
           this.$buefy.notification.open({
-            message: "网络异常：" + error,
+            message: "服务器异常：" + error,
             type: "is-danger",
           });
         });
@@ -211,7 +211,7 @@ export default {
       .catch((error) => {
         this.isLoading = false;
         this.$buefy.notification.open({
-          message: "网络异常：" + error,
+          message: "服务器异常：" + error,
           type: "is-danger",
         });
         return;
@@ -257,7 +257,7 @@ export default {
       .catch((error) => {
         this.isLoading = false;
         this.$buefy.notification.open({
-          message: "网络异常：" + error,
+          message: "服务器异常：" + error,
           type: "is-danger",
         });
         return;
@@ -289,9 +289,14 @@ export default {
       let clock = new Date();
       this.clock = formatDateTime(clock);
       if (clock > this.exam.endTime && !this.localDisabled) {
-        clearInterval(this.interval);
         this.localDisabled = true;
-        this.saveExit();
+        this.save();
+        this.$buefy.dialog.alert({
+          hasIcon: true,
+          message: "考试已结束，同学们辛苦了！<br>您的答案已保存，请及时退出登录",
+          type: "is-info",
+          position: "is-top"
+        });
       }
     }, 1000);
   },

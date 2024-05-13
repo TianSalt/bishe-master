@@ -10,6 +10,7 @@
           margin-top: 10px;
           width: 100%;
         "
+        v-if="mode === 'list'"
       >
         <section style="color: #755dd3; text-align: left">
           此处展示所有公开的考试。您在创建试卷后点击「发布」即可公开试卷。
@@ -73,11 +74,28 @@
             </span>
           </b-table-column>
 
+          <b-table-column label="查看" :centered="true" v-slot="props">
+            <b-button
+              class="button is-info"
+              outlined
+              icon-left="magnify"
+              style="height: 24.0px"
+              @click="checkExam(props.row)"
+            >
+            </b-button>
+          </b-table-column>
+
           <template #empty>
             <div v-if="!isLoading" class="has-text-centered">无记录</div>
           </template>
         </b-table>
       </div>
+
+      <teacher-papers-check-view
+        v-if="mode === 'check'"
+        :exam="examToCheck"
+        @backToList="mode = 'list'"
+      ></teacher-papers-check-view>
 
       <b-loading
         :active.sync="isLoading"
@@ -91,11 +109,13 @@
 <script>
 import axios from "axios";
 import TeacherSidebarView from "./TeacherSidebarView.vue";
+import TeacherPapersCheckView from "../teacher/TeacherPapersCheckView.vue";
 export default {
-  components: { TeacherSidebarView },
+  components: { TeacherSidebarView, TeacherPapersCheckView },
   data() {
     return {
       uid: null,
+      mode: "list",
 
       data: [],
       timeDiff: new Date().getTimezoneOffset() * 60000,
@@ -103,6 +123,12 @@ export default {
     };
   },
   methods: {
+    checkExam(row) {
+      row.startTimeFormatted = row.startTime;
+      row.endTimeFormatted = row.endTime;
+      this.examToCheck = row;
+      this.mode = "check";
+    },
     statusText(status) {
       switch (status) {
         case 0:
@@ -136,16 +162,19 @@ export default {
     this.uid = JSON.parse(localStorage.getItem("access-teacher")).uid;
   },
   async mounted() {
-    this.isLoading = true;
     var formatDateTime = function (date) {
       var y = date.getFullYear();
       var m = date.getMonth() + 1;
       var d = date.getDate();
       var h = date.getHours();
       var minute = date.getMinutes();
+      m = m < 10 ? "0" + m : m;
+      d = d < 10 ? "0" + d : d;
+      h = h < 10 ? "0" + h : h;
       minute = minute < 10 ? "0" + minute : minute;
-      return y + " 年 " + m + " 月 " + d + " 日　" + h + ":" + minute;
+      return y + "-" + m + "-" + d + "　" + h + ":" + minute;
     };
+    this.isLoading = true;
     await axios
       .get("/api/exams", { params: { isPublished: true } })
       .then((result) => {
@@ -162,6 +191,7 @@ export default {
             else status = 2;
           }
           this.data.push({
+            examId: i.examId,
             title: i.title,
             creatorName: i.creatorName,
             startTime: formatDateTime(startTimeStamp),
@@ -174,24 +204,10 @@ export default {
       .catch((error) => {
         this.isLoading = false;
         this.$buefy.notification.open({
-          message: "网络异常：" + error,
+          message: "服务器异常：" + error,
           type: "is-danger",
         });
       });
   },
 };
 </script>
-
-<style>
-.sidebar-page {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-height: 100%;
-}
-.sidebar-page .sidebar-layout {
-  display: flex;
-  flex-direction: row;
-  min-height: 100%;
-}
-</style>
