@@ -91,11 +91,10 @@
           :data="data"
           :checked-rows.sync="checkedRows"
           paginated
-          per-page="50"
+          per-page="10"
           :checkable="deleteMode"
           checkbox-position="right"
           checkbox-type="is-danger"
-          narrowed
           striped
         >
           <b-table-column field="major" label="专业" searchable v-slot="props">
