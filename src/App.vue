@@ -4,13 +4,6 @@
   </div>
 </template>
 
-<script>
-// import IndexView from "./views/IndexView.vue";
-// export default {
-//   components: { IndexView },
-// };
-</script>
-
 <style>
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap");

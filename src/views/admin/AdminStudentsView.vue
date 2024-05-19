@@ -6,7 +6,6 @@
         style="text-align: center; font-weight: 400"
         :can-cancel="false"
         position="static"
-        type="is-warning"
         open
       >
         <div class="p-1">
@@ -29,7 +28,7 @@
               ><router-link to="/admin/personal"
                 ><b-menu-item icon="account" label="个人资料"></b-menu-item
               ></router-link>
-              <b-menu-item icon="logout" label="退出"></b-menu-item>
+              <b-menu-item icon="logout" label="退出" @click="logOut"></b-menu-item>
             </b-menu-list>
             <b-menu-list label="大学生上机考试系统"
               ><router-link to="/admin/about"
@@ -267,6 +266,16 @@ export default {
   },
   methods: {
     registerstudent() {
+      this.addField = {
+        name: {
+          type: null,
+          message: null,
+        },
+        studentId: {
+          type: null,
+          message: null,
+        },
+      };
       if (this.student.name === "") {
         this.addField.name.type = "is-danger";
         this.addField.name.message = "请填写此字段。";
@@ -429,6 +438,10 @@ export default {
             pauseOnHover: true,
           });
         });
+    },
+    logOut() {
+      localStorage.removeItem("access-admin");
+      this.$router.push("/admin/login");
     },
   },
   async mounted() {

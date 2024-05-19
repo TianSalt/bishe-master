@@ -4,7 +4,7 @@
       <b-navbar>
         <template #brand>
           <b-navbar-item>
-            <img src="@/images/smalllogo.png" alt="上机考试" />
+            <img src="@/images/small-logo.png" alt="上机考试" />
           </b-navbar-item>
         </template>
         <template #start
@@ -83,15 +83,16 @@
             <div v-if="!isLoading" class="has-text-centered">无记录</div>
           </template>
         </b-table>
-
-        <h6 class="title is-6">你的信息</h6>
-        <div class="block">
-          <div><b>专业：</b>{{ info.major }}</div>
-          <div><b>班级：</b>{{ info.schoolClass }}</div>
-          <div><b>学号：</b>{{ info.studentId }}</div>
-          <div><b>姓名：</b>{{ info.name }}</div>
-        </div>
-        <div class="block">如个人信息有误，请联系系统管理员修改</div>
+        <section style="margin: 10px">
+          <h6 class="title is-6">考生信息</h6>
+          <div class="block">
+            <div><b>专业：</b>{{ info.major }}</div>
+            <div><b>班级：</b>{{ info.schoolClass }}</div>
+            <div><b>学号：</b>{{ info.studentId }}</div>
+            <div><b>姓名：</b>{{ info.name }}</div>
+          </div>
+          <div class="block">如个人信息有误，请联系系统管理员修改</div>
+        </section>
       </div>
     </div>
 

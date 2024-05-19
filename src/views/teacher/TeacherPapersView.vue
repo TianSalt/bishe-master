@@ -88,7 +88,7 @@
             </b-button>
             <b-button
               class="button is-info"
-              icon-left="account-group"
+              icon-left="account-edit-outline"
               style="margin-left: 10px; height: 24px"
               v-if="props.row.isPublished === true"
               @click="setStudents(props.row)"

@@ -3,7 +3,7 @@
     <b-navbar fixed-top shadow style="height: 10vh">
       <template #start>
         <b-navbar-item>
-          <img src="@/images/smalllogo.png" alt="上机考试" />
+          <img src="@/images/small-logo.png" alt="上机考试" />
         </b-navbar-item>
         <b-navbar-item>
           <span style="color: #755dd3; font-size: larger">{{ myName }}</span

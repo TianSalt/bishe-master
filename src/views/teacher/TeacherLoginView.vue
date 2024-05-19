@@ -14,22 +14,11 @@
         <b-input v-model="teacher.name" maxlength="255"></b-input>
       </b-field>
 
-      <b-field
-        label="工号"
-        :type="addField.employeeId.type"
-        :message="addField.employeeId.message"
-      >
-        <b-input
-          v-model="teacher.employeeId"
-          :maxlength="mode === 'login' ? null : 255"
-        ></b-input>
+      <b-field label="工号" :type="addField.employeeId.type" :message="addField.employeeId.message">
+        <b-input v-model="teacher.employeeId" :maxlength="mode === 'login' ? null : 255"></b-input>
       </b-field>
 
-      <b-field
-        label="密码"
-        :type="addField.password.type"
-        :message="addField.password.message"
-      >
+      <b-field label="密码" :type="addField.password.type" :message="addField.password.message">
         <b-input
           type="password"
           v-model="teacher.passwordHash"
@@ -122,7 +111,20 @@ export default {
         });
     },
     register() {
-      // Implement your registration logic here
+      this.addField = {
+        name: {
+          type: null,
+          message: null,
+        },
+        employeeId: {
+          type: null,
+          message: null,
+        },
+        password: {
+          type: null,
+          message: null,
+        },
+      };
       if (this.teacher.name === "") {
         this.addField.name.type = "is-danger";
         this.addField.name.message = "请填写此字段。";

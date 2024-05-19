@@ -14,7 +14,7 @@
         <b-menu-list label="教师端"
           ><router-link to="/teacher/exams"
             ><b-menu-item
-              icon="google-classroom"
+              icon="table-chair"
               :active="
                 this.$route.path === '/teacher/exams' ||
                 this.$route.path === '/teacher/' ||

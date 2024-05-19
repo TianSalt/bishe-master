@@ -7,7 +7,6 @@
         :can-cancel="false"
         position="static"
         open
-        type="is-warning"
       >
         <div class="p-1">
           <div class="block">
@@ -32,7 +31,7 @@
               ><router-link to="/admin/personal"
                 ><b-menu-item icon="account" label="个人资料"></b-menu-item
               ></router-link>
-              <b-menu-item icon="logout" label="退出"></b-menu-item>
+              <b-menu-item icon="logout" label="退出" @click="logOut"></b-menu-item>
             </b-menu-list>
             <b-menu-list label="大学生上机考试系统"
               ><router-link to="/admin/about"
@@ -310,6 +309,20 @@ export default {
       };
     },
     modifyConfirmed(row) {
+      this.modifyField = {
+        name: {
+          type: null,
+          message: null,
+        },
+        employeeId: {
+          type: null,
+          message: null,
+        },
+        password: {
+          type: null,
+          message: null,
+        },
+      };
       if (this.teacherModify.name === "") {
         this.modifyField.name.type = "is-danger";
         this.modifyField.name.message = "请填写此字段。";
@@ -361,6 +374,20 @@ export default {
         });
     },
     registerTeacher() {
+      this.addField = {
+        name: {
+          type: null,
+          message: null,
+        },
+        employeeId: {
+          type: null,
+          message: null,
+        },
+        password: {
+          type: null,
+          message: null,
+        },
+      };
       if (this.teacher.name === "") {
         this.addField.name.type = "is-danger";
         this.addField.name.message = "请填写此字段。";
@@ -457,6 +484,10 @@ export default {
           type: "is-success",
         });
       }, 3000);
+    },
+    logOut() {
+      localStorage.removeItem("access-admin");
+      this.$router.push("/admin/login");
     },
   },
   mounted() {
