@@ -358,6 +358,16 @@ export default {
         let fileContent = reader.result.replace(/\r\n/g, "\n").trim();
         let lines = fileContent.split("\n");
         let headers = lines.shift().split(",");
+        let t = headers.slice().sort();
+        if (!(t[0] === "专业" && t[1] === "姓名" && t[2] === "学号" && t[3] === "班级")) {
+          this.addAllLoading = false;
+          this.$buefy.notification.open({
+            message: "文件格式错误",
+            type: "is-danger",
+            position: "is-top",
+          });
+          return;
+        }
         const propertyMap = {
           专业: "major",
           班级: "schoolClass",
@@ -404,7 +414,7 @@ export default {
       } catch (error) {
         this.isLoading = false;
         this.$buefy.notification.open({
-          message: "请上传 .CSV 文件",
+          message: "文件格式错误",
           type: "is-danger",
           position: "is-top",
         });
