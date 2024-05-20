@@ -380,14 +380,11 @@ export default {
             this.isLoading = false;
             this.addAllLoading = false;
             this.isAddAllModalActive = false;
-            this.$buefy.dialog.confirm({
-              title: "添加完成",
+            this.$buefy.dialog.alert({
+              title: "操作完成",
               hasIcon: true,
               message: result.data.data,
               onConfirm: () => {
-                location.reload();
-              },
-              onCancel: () => {
                 location.reload();
               },
             });
