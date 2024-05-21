@@ -15,39 +15,25 @@
       </template>
       <template #end>
         <b-navbar-item tag="div" v-if="!localDisabled">
-          <b-button
-            icon-left="content-save-outline"
-            class="is-primary"
-            @click="save"
+          <b-button icon-left="content-save-outline" class="is-primary" @click="save"
             >保存答案</b-button
           >
         </b-navbar-item>
         <b-navbar-item tag="div" v-if="!localDisabled">
-          <b-button
-            icon-right="chevron-right"
-            class="is-light"
-            @click="saveExit()"
+          <b-button icon-right="chevron-right" class="is-light" @click="saveExit()"
             >保存并返回</b-button
           >
         </b-navbar-item>
         <b-navbar-item tag="div" v-if="localDisabled">
-          <b-button icon-right="chevron-right" class="is-light" @click="exit()"
-            >返回</b-button
-          >
+          <b-button icon-right="chevron-right" class="is-light" @click="exit()">返回</b-button>
         </b-navbar-item>
       </template>
     </b-navbar>
-    <section style="margin-top: 100px; text-align: center">
+    <section style="margin-top: 100px; padding-left: 50px; padding-right: 50px; text-align: center">
       <h1 class="title">{{ exam.title }}</h1>
       <h2 class="subtitle">{{ exam.introduction }}</h2>
-      <div>
-        <span style="font-weight: 700">开始时间：</span
-        >{{ exam.startTimeFormatted }}
-      </div>
-      <div>
-        <span style="font-weight: 700">结束时间：</span
-        >{{ exam.endTimeFormatted }}
-      </div>
+      <div><span style="font-weight: 700">开始时间：</span>{{ exam.startTimeFormatted }}</div>
+      <div><span style="font-weight: 700">结束时间：</span>{{ exam.endTimeFormatted }}</div>
     </section>
     <section
       style="
@@ -60,12 +46,8 @@
     >
       <div v-for="(question, index) in questions" :key="index">
         <div v-if="question.questionType === 0">
-          <div class="statement">
-            {{ index + 1 }}.&nbsp;{{ question.splited[0] }}
-          </div>
-          <b-field
-            v-for="(option, optionIndex) in question.splited.slice(1)"
-            :key="optionIndex"
+          <div class="statement">{{ index + 1 }}.&nbsp;{{ question.splited[0] }}</div>
+          <b-field v-for="(option, optionIndex) in question.splited.slice(1)" :key="optionIndex"
             ><b-radio
               :disabled="localDisabled"
               v-model="question.answer"
@@ -76,12 +58,8 @@
           >
         </div>
         <div v-else-if="question.questionType === 1">
-          <div class="statement">
-            {{ index + 1 }}.&nbsp;{{ question.splited[0] }}
-          </div>
-          <b-field
-            v-for="(option, optionIndex) in question.splited.slice(1)"
-            :key="optionIndex"
+          <div class="statement">{{ index + 1 }}.&nbsp;{{ question.splited[0] }}</div>
+          <b-field v-for="(option, optionIndex) in question.splited.slice(1)" :key="optionIndex"
             ><b-checkbox
               :disabled="localDisabled"
               v-model="question.answer"
@@ -115,9 +93,7 @@
       </div>
     </section>
     <div class="block" style="text-align: center; color: #755dd3">
-      <b-button icon-left="arrow-expand-up" @click="scrollToTop"
-        >回到顶部</b-button
-      >
+      <b-button icon-left="arrow-expand-up" @click="scrollToTop">回到顶部</b-button>
     </div>
     <b-loading :active.sync="isLoading"></b-loading>
   </div>
@@ -163,12 +139,10 @@ export default {
       for (let i = 0; i < this.questions.length; i++) {
         let answer = null;
         if (this.questions[i].answer) {
-          if (this.questions[i].questionType === 0)
-            answer = this.questions[i].answer;
+          if (this.questions[i].questionType === 0) answer = this.questions[i].answer;
           else if (this.questions[i].questionType === 1)
             answer = this.questions[i].answer.sort().join("");
-          else if (this.questions[i].questionType === 2)
-            answer = this.questions[i].answer.trim();
+          else if (this.questions[i].questionType === 2) answer = this.questions[i].answer.trim();
         }
         asyncOperations.push(
           axios.post("/api/student-exam-questions", {
@@ -237,17 +211,14 @@ export default {
               if (this.loadingQuestions[i].questionType !== 1)
                 this.loadingQuestions[i].answer = j.answer ? j.answer : "";
               else {
-                this.loadingQuestions[i].answer = j.answer
-                  ? j.answer.split("")
-                  : [];
+                this.loadingQuestions[i].answer = j.answer ? j.answer.split("") : [];
               }
               found = true;
               break;
             }
           }
           if (!found) {
-            if (this.loadingQuestions[i].questionType !== 1)
-              this.loadingQuestions[i].answer = "";
+            if (this.loadingQuestions[i].questionType !== 1) this.loadingQuestions[i].answer = "";
             else {
               this.loadingQuestions[i].answer = [];
             }
@@ -295,7 +266,7 @@ export default {
           hasIcon: true,
           message: "考试已结束，同学们辛苦了！<br>您的答案已保存，请及时退出登录",
           type: "is-info",
-          position: "is-top"
+          position: "is-top",
         });
       }
     }, 1000);

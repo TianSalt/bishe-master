@@ -200,7 +200,9 @@
                     ></b-button>
                   </b-table-column>
                   <template #empty>
-                    <div class="has-text-centered">从左侧学生名单中选取考生</div>
+                    <div class="has-text-centered">
+                      从左侧选取考生后点击<span style="font-weight: 700; color: #007ce8">添加</span>
+                    </div>
                   </template>
                 </b-table>
                 <div style="display: flex; justify-content: space-between">

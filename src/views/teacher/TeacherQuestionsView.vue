@@ -116,7 +116,7 @@
       <div style="width: 100%" v-if="mode === 'add' || mode === 'edit'">
         <nav class="navbar" style="background-color: transparent">
           <div class="navbar-brand">
-            <a class="navbar-item" @click="backFromEdit">
+            <a class="navbar-item" @click="backToList">
               <b-icon icon="chevron-left" style="margin-right: 5px"> </b-icon>
               <p>返回</p>
             </a>
@@ -157,8 +157,8 @@
                 <span style="color: #755dd3; font-weight: 800">格式：</span>
                 <pre>
 题干
-#选项一内容
-#选项二内容
+#选项A内容
+#选项B内容
 ...（至多 26 项）</pre
                 >
               </div>
@@ -179,10 +179,10 @@
           ></textarea>
           <div class="content" style="text-align: left; margin-top: 20px; margin-bottom: 10px">
             <div v-if="(mode === 'add' ? newQuestion : editedQuestion).questionType === 0">
-              请输入一个字母：
+              请输入一个大写字母：
             </div>
             <div v-if="(mode === 'add' ? newQuestion : editedQuestion).questionType === 1">
-              请输入一个或（按顺序）多个字母：
+              请输入一个或（按顺序）多个大写字母：
             </div>
             <div v-if="(mode === 'add' ? newQuestion : editedQuestion).questionType === 2">
               请输入应填的内容：
@@ -309,15 +309,16 @@ export default {
   },
   computed: {},
   methods: {
-    backFromEdit() {
+    backToList() {
       if (this.mode === "edit")
         this.$buefy.dialog.confirm({
-          message: "确定要返回吗？您所作出的更改将不会被保留！",
+          message: "确定要返回吗？您的更改将不会保留！",
           type: "is-danger",
           onConfirm: () => {
             this.mode = "list";
           },
         });
+      else this.mode = "list";
     },
     loadQuestions() {
       this.data = [];
