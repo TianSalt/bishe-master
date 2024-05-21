@@ -8,11 +8,7 @@
     </div>
     <div class="content" style="margin-left: 20px; margin-right: 20px">
       <b-input placeholder="标题" v-model="localExam.title"> </b-input>
-      <b-input
-        placeholder="序言"
-        v-model="localExam.introduction"
-        style="margin-top: 10px"
-      >
+      <b-input placeholder="序言" v-model="localExam.introduction" style="margin-top: 10px">
       </b-input>
       <div style="display: flex; padding: 20px">
         <b-datetimepicker
@@ -45,11 +41,7 @@
             {{ props.row.content | truncate(80) }}
           </b-table-column>
 
-          <b-table-column
-            :label="'分值（总分：' + totalScore + '）'"
-            centered
-            v-slot="props"
-          >
+          <b-table-column :label="'分值（总分：' + totalScore + '）'" centered v-slot="props">
             <b-numberinput
               v-model="props.row.score"
               controls-position="compact"
@@ -88,8 +80,7 @@
                 "
               >
               </b-button
-              ><b-button rounded disabled icon-left="chevron-double-up" v-else>
-              </b-button
+              ><b-button rounded disabled icon-left="chevron-double-up" v-else> </b-button
             ></span>
             <span
               ><b-button
@@ -99,12 +90,7 @@
                 @click="swapQuestion(index, index - 1)"
               >
               </b-button>
-              <b-button
-                disabled
-                rounded
-                icon-left="chevron-up"
-                v-else
-              ></b-button
+              <b-button disabled rounded icon-left="chevron-up" v-else></b-button
             ></span>
             <span
               ><b-button
@@ -114,12 +100,7 @@
                 @click="swapQuestion(index, index + 1)"
               >
               </b-button
-              ><b-button
-                disabled
-                rounded
-                icon-left="chevron-down"
-                v-else
-              ></b-button
+              ><b-button disabled rounded icon-left="chevron-down" v-else></b-button
             ></span>
           </b-table-column>
           <template #empty>
@@ -139,12 +120,7 @@
       <b-modal v-model="addModalActive" has-modal-card>
         <div class="modal-card" style="width: auto">
           <section class="modal-card-body">
-            <b-table
-              :data="allQuestions"
-              paginated
-              :per-page="10"
-              :narrowed="true"
-            >
+            <b-table :data="allQuestions" paginated :per-page="10" :narrowed="true">
               <b-table-column
                 :searchable="true"
                 :numeric="true"
@@ -158,12 +134,7 @@
                   {{ props.row.questionId }}
                 </span>
               </b-table-column>
-              <b-table-column
-                field="questionType"
-                label="题型"
-                sortable
-                v-slot="props"
-              >
+              <b-table-column field="questionType" label="题型" sortable v-slot="props">
                 <span class="tag" :class="type(props.row.questionType)">
                   {{ questionTypes[props.row.questionType] }}
                 </span>
@@ -190,7 +161,7 @@
                     questionsInExam.push(temp);
                     addModalActive = false;
                   "
-                  style="margin-right: 10px; height: 24.0px"
+                  style="margin-right: 10px; height: 24px"
                 >
                 </b-button>
               </b-table-column>
@@ -263,18 +234,14 @@ export default {
       this.questionsInExam = this.questionsInExam.slice();
     },
     backToList() {
-      if (this.mode === "edit") {
-        this.$buefy.dialog.confirm({
-          hasIcon: true,
-          message: "确定要返回吗？您所作出的更改将不会被保留！",
-          type: "is-danger",
-          onConfirm: () => {
-            this.$emit("backToList");
-          },
-        });
-      } else {
-        this.$emit("backToList");
-      }
+      this.$buefy.dialog.confirm({
+        hasIcon: true,
+        message: "确定要返回吗？您所作出的更改将不会被保留！",
+        type: "is-danger",
+        onConfirm: () => {
+          this.$emit("backToList");
+        },
+      });
     },
     addSave() {
       if (
@@ -381,11 +348,7 @@ export default {
               );
             }
           }
-          for (
-            let i = this.questionsInExam.length;
-            i < this.initialQuestionCount;
-            i++
-          ) {
+          for (let i = this.questionsInExam.length; i < this.initialQuestionCount; i++) {
             asyncOperations.push(
               axios.delete("/api/exam-questions", {
                 params: { examId: this.localExam.examId, questionIndex: i },
@@ -439,13 +402,9 @@ export default {
           this.isLoading = false;
           this.questionsInExam = result.data.data;
           this.initialQuestionCount = this.questionsInExam.length;
-          this.totalScore = this.questionsInExam.reduce(function (
-            acc,
-            current
-          ) {
+          this.totalScore = this.questionsInExam.reduce(function (acc, current) {
             return acc + current.score;
-          },
-          0);
+          }, 0);
         })
         .catch((error) => {
           this.isLoading = false;
