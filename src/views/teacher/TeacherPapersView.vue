@@ -672,7 +672,7 @@ export default {
           addedStudents.push(i);
         }
       }
-      this.studentsToChangeTo = addedStudents.concat(this.studentsToChangeTo);
+      this.studentsToChangeTo = this.studentsToChangeTo.concat(addedStudents);
       this.checkedRows = [];
     },
     confirmStudents(examId) {
