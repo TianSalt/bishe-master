@@ -51,7 +51,8 @@
                 }, 0)
               "
               min="0"
-            ></b-numberinput>
+            >
+            </b-numberinput>
           </b-table-column>
 
           <b-table-column v-slot="{ index }" label="删除" centered>
@@ -65,11 +66,12 @@
                   return acc + current.score;
                 }, 0);
               "
-            ></b-button>
+            >
+            </b-button>
           </b-table-column>
           <b-table-column v-slot="{ index }" label="移动" centered>
-            <span
-              ><b-button
+            <span>
+              <b-button
                 rounded
                 icon-left="chevron-double-up"
                 v-if="index !== 0"
@@ -79,29 +81,29 @@
                   questionsInExam.unshift(questionToMoveTop);
                 "
               >
-              </b-button
-              ><b-button rounded disabled icon-left="chevron-double-up" v-else> </b-button
-            ></span>
-            <span
-              ><b-button
+              </b-button>
+              <b-button rounded disabled icon-left="chevron-double-up" v-else> </b-button>
+            </span>
+            <span>
+              <b-button
                 rounded
                 icon-left="chevron-up"
                 v-if="index !== 0"
                 @click="swapQuestion(index, index - 1)"
               >
               </b-button>
-              <b-button disabled rounded icon-left="chevron-up" v-else></b-button
-            ></span>
-            <span
-              ><b-button
+              <b-button disabled rounded icon-left="chevron-up" v-else></b-button>
+            </span>
+            <span>
+              <b-button
                 rounded
                 icon-left="chevron-down"
                 v-if="index !== questionsInExam.length - 1"
                 @click="swapQuestion(index, index + 1)"
               >
-              </b-button
-              ><b-button disabled rounded icon-left="chevron-down" v-else></b-button
-            ></span>
+              </b-button>
+              <b-button disabled rounded icon-left="chevron-down" v-else></b-button>
+            </span>
           </b-table-column>
           <template #empty>
             <div class="has-text-centered">点击➕从题库中选择题目</div>
@@ -115,7 +117,8 @@
             addModalActive = true;
             if (allQuestions.length === 0) loadQuestions();
           "
-        ></b-button>
+        >
+        </b-button>
       </section>
       <b-modal v-model="addModalActive" has-modal-card>
         <div class="modal-card" style="width: auto">
@@ -236,7 +239,7 @@ export default {
     backToList() {
       this.$buefy.dialog.confirm({
         hasIcon: true,
-        message: "确定要返回吗？您所作出的更改将不会被保留！",
+        message: "确定要返回吗？您的更改将不会保留！",
         type: "is-danger",
         onConfirm: () => {
           this.$emit("backToList");

@@ -24,7 +24,7 @@
         </template>
       </b-navbar>
       <div style="margin-left: 50px; margin-right: 50px">
-        <b-table class="table" :data="exams">
+        <b-table class="table" :data="exams" card-layout>
           <b-table-column
             label="标题"
             field="title"

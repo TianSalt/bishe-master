@@ -383,7 +383,6 @@ export default {
           });
           return student;
         });
-        console.log(studentsToAdd);
         await axios
           .post("/api/students/all", studentsToAdd)
           .then((result) => {
